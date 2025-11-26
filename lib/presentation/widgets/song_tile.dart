@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -83,16 +84,7 @@ class _SongTileState extends ConsumerState<SongTile> with SingleTickerProviderSt
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(10),
-                    child: widget.song.artworkUrl != null
-                        ? CachedNetworkImage(
-                            imageUrl: widget.song.artworkUrl!,
-                            width: 52,
-                            height: 52,
-                            fit: BoxFit.cover,
-                            placeholder: (context, url) => _buildPlaceholder(),
-                            errorWidget: (context, url, error) => _buildPlaceholder(),
-                          )
-                        : _buildPlaceholder(),
+                    child: _buildArtwork(),
                   ),
                 )
               else if (widget.showTrackNumber)
@@ -208,6 +200,36 @@ class _SongTileState extends ConsumerState<SongTile> with SingleTickerProviderSt
     );
   }
 
+  Widget _buildArtwork() {
+    // Check for local artwork first
+    if (widget.song.isLocal && widget.song.localArtworkPath != null) {
+      final file = File(widget.song.localArtworkPath!);
+      if (file.existsSync()) {
+        return Image.file(
+          file,
+          width: 52,
+          height: 52,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stack) => _buildPlaceholder(),
+        );
+      }
+    }
+    
+    // Fall back to network image
+    if (widget.song.artworkUrl != null) {
+      return CachedNetworkImage(
+        imageUrl: widget.song.artworkUrl!,
+        width: 52,
+        height: 52,
+        fit: BoxFit.cover,
+        placeholder: (context, url) => _buildPlaceholder(),
+        errorWidget: (context, url, error) => _buildPlaceholder(),
+      );
+    }
+    
+    return _buildPlaceholder();
+  }
+
   Widget _buildMoreButton() {
     return GestureDetector(
       onTap: widget.onMorePressed ?? () => _showSongOptions(context),
@@ -246,6 +268,59 @@ class _SongTileState extends ConsumerState<SongTile> with SingleTickerProviderSt
         Icons.music_note_rounded,
         color: AppColors.textSecondaryDark.withOpacity(0.5),
         size: 24,
+      ),
+    );
+  }
+
+  Widget _buildSheetArtwork() {
+    // Check for local artwork first
+    if (widget.song.isLocal && widget.song.localArtworkPath != null) {
+      final file = File(widget.song.localArtworkPath!);
+      if (file.existsSync()) {
+        return Image.file(
+          file,
+          width: 64,
+          height: 64,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stack) => _buildSheetPlaceholder(),
+        );
+      }
+    }
+    
+    // Fall back to network image
+    if (widget.song.artworkUrl != null) {
+      return CachedNetworkImage(
+        imageUrl: widget.song.artworkUrl!,
+        width: 64,
+        height: 64,
+        fit: BoxFit.cover,
+        placeholder: (context, url) => _buildSheetPlaceholder(),
+        errorWidget: (context, url, error) => _buildSheetPlaceholder(),
+      );
+    }
+    
+    return _buildSheetPlaceholder();
+  }
+
+  Widget _buildSheetPlaceholder() {
+    return Container(
+      width: 64,
+      height: 64,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppColors.glassDark,
+            AppColors.glassLight,
+          ],
+        ),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Icon(
+        Icons.music_note_rounded,
+        color: AppColors.textSecondaryDark.withOpacity(0.5),
+        size: 28,
       ),
     );
   }
@@ -316,14 +391,7 @@ class _SongTileState extends ConsumerState<SongTile> with SingleTickerProviderSt
                         ),
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(12),
-                          child: widget.song.artworkUrl != null
-                              ? CachedNetworkImage(
-                                  imageUrl: widget.song.artworkUrl!,
-                                  width: 64,
-                                  height: 64,
-                                  fit: BoxFit.cover,
-                                )
-                              : _buildPlaceholder(),
+                          child: _buildSheetArtwork(),
                         ),
                       ),
                       const SizedBox(width: 16),

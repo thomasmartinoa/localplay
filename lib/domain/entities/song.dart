@@ -9,7 +9,10 @@ class Song extends Equatable {
   final String? albumId;
   final String? artistId;
   final String? artworkUrl;
-  final String audioUrl;
+  final String? audioUrl;
+  final String? filePath;
+  final String? localArtworkPath;
+  final bool isLocal;
   final Duration duration;
   final int? trackNumber;
   final int? discNumber;
@@ -19,6 +22,7 @@ class Song extends Equatable {
   final bool isFavorite;
   final DateTime? lastPlayed;
   final int playCount;
+  final DateTime? dateAdded;
 
   const Song({
     required this.id,
@@ -28,7 +32,10 @@ class Song extends Equatable {
     this.albumId,
     this.artistId,
     this.artworkUrl,
-    required this.audioUrl,
+    this.audioUrl,
+    this.filePath,
+    this.localArtworkPath,
+    this.isLocal = false,
     required this.duration,
     this.trackNumber,
     this.discNumber,
@@ -38,6 +45,7 @@ class Song extends Equatable {
     this.isFavorite = false,
     this.lastPlayed,
     this.playCount = 0,
+    this.dateAdded,
   });
 
   Song copyWith({
@@ -49,6 +57,9 @@ class Song extends Equatable {
     String? artistId,
     String? artworkUrl,
     String? audioUrl,
+    String? filePath,
+    String? localArtworkPath,
+    bool? isLocal,
     Duration? duration,
     int? trackNumber,
     int? discNumber,
@@ -58,6 +69,7 @@ class Song extends Equatable {
     bool? isFavorite,
     DateTime? lastPlayed,
     int? playCount,
+    DateTime? dateAdded,
   }) {
     return Song(
       id: id ?? this.id,
@@ -68,6 +80,9 @@ class Song extends Equatable {
       artistId: artistId ?? this.artistId,
       artworkUrl: artworkUrl ?? this.artworkUrl,
       audioUrl: audioUrl ?? this.audioUrl,
+      filePath: filePath ?? this.filePath,
+      localArtworkPath: localArtworkPath ?? this.localArtworkPath,
+      isLocal: isLocal ?? this.isLocal,
       duration: duration ?? this.duration,
       trackNumber: trackNumber ?? this.trackNumber,
       discNumber: discNumber ?? this.discNumber,
@@ -77,6 +92,7 @@ class Song extends Equatable {
       isFavorite: isFavorite ?? this.isFavorite,
       lastPlayed: lastPlayed ?? this.lastPlayed,
       playCount: playCount ?? this.playCount,
+      dateAdded: dateAdded ?? this.dateAdded,
     );
   }
 
@@ -86,6 +102,12 @@ class Song extends Equatable {
     final seconds = duration.inSeconds % 60;
     return '$minutes:${seconds.toString().padLeft(2, '0')}';
   }
+
+  /// Get the audio source path (local file or URL)
+  String? get audioSource => isLocal ? filePath : audioUrl;
+
+  /// Get artwork path (local or URL)
+  String? get artworkSource => isLocal ? localArtworkPath : artworkUrl;
 
   @override
   List<Object?> get props => [
@@ -97,6 +119,9 @@ class Song extends Equatable {
         artistId,
         artworkUrl,
         audioUrl,
+        filePath,
+        localArtworkPath,
+        isLocal,
         duration,
         trackNumber,
         discNumber,
@@ -106,5 +131,6 @@ class Song extends Equatable {
         isFavorite,
         lastPlayed,
         playCount,
+        dateAdded,
       ];
 }

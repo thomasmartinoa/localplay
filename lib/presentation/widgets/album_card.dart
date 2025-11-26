@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
@@ -85,16 +86,7 @@ class _AlbumCardState extends State<AlbumCard> with SingleTickerProviderStateMix
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(16),
-                  child: widget.album.artworkUrl != null
-                      ? CachedNetworkImage(
-                          imageUrl: widget.album.artworkUrl!,
-                          width: widget.size,
-                          height: widget.size,
-                          fit: BoxFit.cover,
-                          placeholder: (context, url) => _buildPlaceholder(),
-                          errorWidget: (context, url, error) => _buildPlaceholder(),
-                        )
-                      : _buildPlaceholder(),
+                  child: _buildArtwork(),
                 ),
               ),
               const SizedBox(height: 10),
@@ -132,6 +124,36 @@ class _AlbumCardState extends State<AlbumCard> with SingleTickerProviderStateMix
         ),
       ),
     );
+  }
+
+  Widget _buildArtwork() {
+    // Check for local artwork first
+    if (widget.album.isLocal && widget.album.localArtworkPath != null) {
+      final file = File(widget.album.localArtworkPath!);
+      if (file.existsSync()) {
+        return Image.file(
+          file,
+          width: widget.size,
+          height: widget.size,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stack) => _buildPlaceholder(),
+        );
+      }
+    }
+    
+    // Fall back to network image
+    if (widget.album.artworkUrl != null) {
+      return CachedNetworkImage(
+        imageUrl: widget.album.artworkUrl!,
+        width: widget.size,
+        height: widget.size,
+        fit: BoxFit.cover,
+        placeholder: (context, url) => _buildPlaceholder(),
+        errorWidget: (context, url, error) => _buildPlaceholder(),
+      );
+    }
+    
+    return _buildPlaceholder();
   }
 
   Widget _buildPlaceholder() {

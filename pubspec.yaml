@@ -34,8 +34,14 @@ dependencies:
   hive_flutter: ^1.1.0
   shared_preferences: ^2.3.2
 
+  # Local Music Scanning
+  permission_handler: ^11.3.0
+  path_provider: ^2.1.2
+  file_picker: ^8.0.0+1
+
   # Utilities
   uuid: ^4.5.1
+  crypto: ^3.0.3
   intl: ^0.19.0
   collection: ^1.18.0
   rxdart: ^0.28.0

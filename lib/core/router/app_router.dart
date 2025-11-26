@@ -8,6 +8,7 @@ import '../../presentation/screens/player/now_playing_screen.dart';
 import '../../presentation/screens/album/album_screen.dart';
 import '../../presentation/screens/playlist/playlist_screen.dart';
 import '../../presentation/screens/artist/artist_screen.dart';
+import '../../presentation/screens/settings/settings_screen.dart';
 import '../../domain/entities/entities.dart';
 
 /// App router configuration using GoRouter
@@ -100,6 +101,12 @@ final appRouter = GoRouter(
           artist: artist,
         );
       },
+    ),
+    // Settings
+    GoRoute(
+      path: '/settings',
+      name: 'settings',
+      builder: (context, state) => const SettingsScreen(),
     ),
   ],
 );

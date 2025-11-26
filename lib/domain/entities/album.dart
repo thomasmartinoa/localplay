@@ -8,6 +8,8 @@ class Album extends Equatable {
   final String artist;
   final String? artistId;
   final String? artworkUrl;
+  final String? localArtworkPath;
+  final bool isLocal;
   final int releaseYear;
   final String? genre;
   final List<Song> songs;
@@ -23,6 +25,8 @@ class Album extends Equatable {
     required this.artist,
     this.artistId,
     this.artworkUrl,
+    this.localArtworkPath,
+    this.isLocal = false,
     required this.releaseYear,
     this.genre,
     this.songs = const [],
@@ -39,6 +43,8 @@ class Album extends Equatable {
     String? artist,
     String? artistId,
     String? artworkUrl,
+    String? localArtworkPath,
+    bool? isLocal,
     int? releaseYear,
     String? genre,
     List<Song>? songs,
@@ -54,6 +60,8 @@ class Album extends Equatable {
       artist: artist ?? this.artist,
       artistId: artistId ?? this.artistId,
       artworkUrl: artworkUrl ?? this.artworkUrl,
+      localArtworkPath: localArtworkPath ?? this.localArtworkPath,
+      isLocal: isLocal ?? this.isLocal,
       releaseYear: releaseYear ?? this.releaseYear,
       genre: genre ?? this.genre,
       songs: songs ?? this.songs,
@@ -64,6 +72,9 @@ class Album extends Equatable {
       description: description ?? this.description,
     );
   }
+
+  /// Get artwork source - local file path or network URL
+  String? get artworkSource => localArtworkPath ?? artworkUrl;
 
   /// Format total duration as "X hr Y min" or "X min"
   String get formattedDuration {
@@ -83,6 +94,8 @@ class Album extends Equatable {
         artist,
         artistId,
         artworkUrl,
+        localArtworkPath,
+        isLocal,
         releaseYear,
         genre,
         songs,

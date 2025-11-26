@@ -159,10 +159,18 @@ class AudioPlayerService {
     if (song == null) return;
 
     try {
-      await _player.setUrl(song.audioUrl);
+      // Load from local file or URL
+      if (song.isLocal && song.filePath != null) {
+        await _player.setFilePath(song.filePath!);
+      } else if (song.audioUrl != null) {
+        await _player.setUrl(song.audioUrl!);
+      } else {
+        print('No audio source available for song: ${song.title}');
+        return;
+      }
       _updateState();
     } catch (e) {
-      // Handle error - maybe the URL is invalid
+      // Handle error - maybe the file or URL is invalid
       print('Error loading song: $e');
     }
   }
