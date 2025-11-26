@@ -1,12 +1,14 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:iconsax/iconsax.dart';
 import '../../core/constants/app_colors.dart';
+import '../../providers/audio_provider.dart';
 import '../widgets/mini_player.dart';
+import '../widgets/vignette_blur_container.dart';
 
-/// Main shell widget with glass bottom navigation and mini player
+/// Main shell widget with floating glass navigation bar - Apple Music style
 class MainShell extends ConsumerStatefulWidget {
   final Widget child;
 
@@ -21,174 +23,220 @@ class _MainShellState extends ConsumerState<MainShell> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: AppColors.backgroundGradient,
+    final playerState = ref.watch(playerStateProvider);
+    final hasCurrentSong = playerState.maybeWhen(
+      data: (state) => state.currentSong != null,
+      orElse: () => false,
+    );
+    
+    // Get safe area bottom padding
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
+    // Nav bar height + bottom padding + margin
+    final navBarTotalHeight = 70 + bottomPadding + 16;
+
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.light.copyWith(
+        statusBarColor: Colors.transparent,
+        systemNavigationBarColor: Colors.transparent,
+      ),
+      child: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: AppColors.backgroundGradient,
+          ),
+        ),
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          extendBody: true,
+          extendBodyBehindAppBar: true,
+          body: Stack(
+            children: [
+              // Main content - extends behind nav bar for glass effect
+              Positioned.fill(
+                child: widget.child,
+              ),
+              // Floating Mini Player (positioned correctly above nav bar)
+              if (hasCurrentSong)
+                Positioned(
+                  left: 12,
+                  right: 12,
+                  bottom: navBarTotalHeight + 8, // 8px gap above nav bar
+                  child: const MiniPlayer(),
+                ),
+              // Floating Glass Navigation Bar
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: _buildFloatingNavBar(context),
+              ),
+            ],
+          ),
         ),
       ),
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        body: Stack(
+    );
+  }
+
+  Widget _buildFloatingNavBar(BuildContext context) {
+    // Pure glass effect - fully transparent with strong blur only
+    // Like looking through thick clear glass
+    const iconColor = Colors.white;
+    final inactiveIconColor = Colors.white.withOpacity(0.5);
+
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+        child: Row(
           children: [
-            // Main content
-            Positioned.fill(
-              bottom: 140, // Mini player height + bottom nav height
-              child: widget.child,
+            // Main navigation pill (Home, New, Radio, Library)
+            Expanded(
+              child: EdgeBlurContainer(
+                height: 70,
+                borderRadius: 18,
+                blur: 15,
+                backgroundColor: Colors.white.withOpacity(0.02),
+                borderColor: Colors.white.withOpacity(0.1),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _buildNavItem(
+                      icon: Icons.home_rounded,
+                      label: 'Home',
+                      index: 0,
+                      route: '/',
+                      iconColor: iconColor,
+                      inactiveColor: inactiveIconColor,
+                    ),
+                    _buildNavItem(
+                      icon: Icons.grid_view_rounded,
+                      label: 'New',
+                      index: 1,
+                      route: '/browse',
+                      isDisabled: true,
+                      iconColor: iconColor,
+                      inactiveColor: inactiveIconColor,
+                    ),
+                    _buildNavItem(
+                      icon: Icons.sensors_rounded,
+                      label: 'Radio',
+                      index: 2,
+                      route: '/radio',
+                      isDisabled: true,
+                      iconColor: iconColor,
+                      inactiveColor: inactiveIconColor,
+                    ),
+                    _buildNavItem(
+                      icon: Icons.library_music_rounded,
+                      label: 'Library',
+                      index: 3,
+                      route: '/library',
+                      iconColor: iconColor,
+                      inactiveColor: inactiveIconColor,
+                    ),
+                  ],
+                ),
+              ),
             ),
-            // Glass bottom bar with mini player
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: _buildGlassBottomSection(context),
-            ),
+            const SizedBox(width: 8),
+            // Search button (circular pill)
+            _buildSearchButton(context, iconColor),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildGlassBottomSection(BuildContext context) {
-    return ClipRRect(
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                AppColors.glassDark.withOpacity(0.8),
-                AppColors.glassLight.withOpacity(0.9),
-              ],
-            ),
-            border: Border(
-              top: BorderSide(
-                color: AppColors.glassHighlight.withOpacity(0.2),
-                width: 0.5,
-              ),
-            ),
-          ),
-          child: SafeArea(
-            top: false,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Mini player
-                const MiniPlayer(),
-                // Glass bottom navigation
-                _buildGlassBottomNav(context),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildGlassBottomNav(BuildContext context) {
-    return Container(
-      height: 70,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _buildNavItem(
-            context,
-            icon: Iconsax.home_2,
-            activeIcon: Iconsax.home_15,
-            label: 'Listen Now',
-            index: 0,
-            route: '/',
-          ),
-          _buildNavItem(
-            context,
-            icon: Iconsax.search_normal_1,
-            activeIcon: Iconsax.search_normal,
-            label: 'Search',
-            index: 1,
-            route: '/search',
-          ),
-          _buildNavItem(
-            context,
-            icon: Iconsax.music_library_2,
-            activeIcon: Iconsax.music_library_25,
-            label: 'Library',
-            index: 2,
-            route: '/library',
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildNavItem(
-    BuildContext context, {
-    required IconData icon,
-    required IconData activeIcon,
-    required String label,
-    required int index,
-    required String route,
-  }) {
-    final isActive = _currentIndex == index;
+  Widget _buildSearchButton(
+    BuildContext context,
+    Color iconColor,
+  ) {
+    final isActive = _currentIndex == 4;
 
     return GestureDetector(
       onTap: () {
-        setState(() {
-          _currentIndex = index;
-        });
-        context.go(route);
+        HapticFeedback.lightImpact();
+        setState(() => _currentIndex = 4);
+        context.go('/search');
       },
+      child: EdgeBlurContainer(
+        height: 70,
+        width: 70,
+        borderRadius: 18,
+        blur: 15,
+        backgroundColor: Colors.white.withOpacity(0.02),
+        borderColor: Colors.white.withOpacity(0.1),
+        child: Icon(
+          Icons.search_rounded,
+          color: isActive ? AppColors.primary : iconColor,
+          size: 28,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNavItem({
+    required IconData icon,
+    required String label,
+    required int index,
+    required String route,
+    required Color iconColor,
+    required Color inactiveColor,
+    bool isDisabled = false,
+  }) {
+    final isActive = _currentIndex == index && !isDisabled;
+    
+    // Active background color - subtle highlight
+    final activeBackgroundColor = Colors.white.withOpacity(0.15);
+
+    return GestureDetector(
+      onTap: isDisabled
+          ? null
+          : () {
+              HapticFeedback.lightImpact();
+              setState(() => _currentIndex = index);
+              context.go(route);
+            },
       behavior: HitTestBehavior.opaque,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeOutCubic,
-        padding: EdgeInsets.symmetric(
-          horizontal: isActive ? 20 : 16,
-          vertical: 8,
-        ),
-        decoration: BoxDecoration(
-          gradient: isActive
-              ? LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    AppColors.primary.withOpacity(0.2),
-                    AppColors.primaryDark.withOpacity(0.1),
-                  ],
-                )
-              : null,
-          borderRadius: BorderRadius.circular(20),
-          border: isActive
-              ? Border.all(
-                  color: AppColors.primary.withOpacity(0.3),
-                  width: 1,
-                )
-              : null,
-        ),
-        child: Row(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              isActive ? activeIcon : icon,
-              color: isActive ? AppColors.primary : AppColors.tabBarInactiveDark,
-              size: 22,
-            ),
-            if (isActive) ...[
-              const SizedBox(width: 8),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.primary,
-                  letterSpacing: 0.2,
-                ),
+            // Icon with background highlight for active state
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: isActive ? activeBackgroundColor : Colors.transparent,
+                borderRadius: BorderRadius.circular(12),
               ),
-            ],
+              child: Icon(
+                icon,
+                color: isDisabled
+                    ? inactiveColor.withOpacity(0.3)
+                    : isActive
+                        ? AppColors.primary
+                        : iconColor,
+                size: 24,
+              ),
+            ),
+            const SizedBox(height: 2),
+            // Label
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+                color: isDisabled
+                    ? inactiveColor.withOpacity(0.3)
+                    : isActive
+                        ? AppColors.primary
+                        : iconColor,
+              ),
+            ),
           ],
         ),
       ),
