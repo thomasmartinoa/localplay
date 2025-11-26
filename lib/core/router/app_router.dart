@@ -3,6 +3,11 @@ import 'package:flutter/material.dart';
 import '../../presentation/screens/main_shell.dart';
 import '../../presentation/screens/home/home_screen.dart';
 import '../../presentation/screens/library/library_screen.dart';
+import '../../presentation/screens/library/all_songs_screen.dart';
+import '../../presentation/screens/library/all_albums_screen.dart';
+import '../../presentation/screens/library/all_artists_screen.dart';
+import '../../presentation/screens/library/all_playlists_screen.dart';
+import '../../presentation/screens/library/favorites_screen.dart';
 import '../../presentation/screens/search/search_screen.dart';
 import '../../presentation/screens/player/now_playing_screen.dart';
 import '../../presentation/screens/album/album_screen.dart';
@@ -107,6 +112,36 @@ final appRouter = GoRouter(
       path: '/settings',
       name: 'settings',
       builder: (context, state) => const SettingsScreen(),
+    ),
+    // All Songs
+    GoRoute(
+      path: '/all-songs',
+      name: 'allSongs',
+      builder: (context, state) => const AllSongsScreen(),
+    ),
+    // All Albums
+    GoRoute(
+      path: '/all-albums',
+      name: 'allAlbums',
+      builder: (context, state) => const AllAlbumsScreen(),
+    ),
+    // All Artists
+    GoRoute(
+      path: '/all-artists',
+      name: 'allArtists',
+      builder: (context, state) => const AllArtistsScreen(),
+    ),
+    // All Playlists
+    GoRoute(
+      path: '/all-playlists',
+      name: 'allPlaylists',
+      builder: (context, state) => const AllPlaylistsScreen(),
+    ),
+    // Favorites
+    GoRoute(
+      path: '/favorites',
+      name: 'favorites',
+      builder: (context, state) => const FavoritesScreen(),
     ),
   ],
 );

@@ -2,11 +2,13 @@ import 'dart:io';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:iconsax/iconsax.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../providers/search_provider.dart';
 import '../../../providers/audio_provider.dart';
+import '../../../providers/local_music_provider.dart';
+import '../../../providers/library_provider.dart';
 import '../../widgets/song_tile.dart';
 
 /// Glass-styled search screen for discovering music
@@ -32,6 +34,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   Widget build(BuildContext context) {
     final searchState = ref.watch(searchProvider);
     final searchHistory = ref.watch(searchHistoryProvider);
+    final recentlyAdded = ref.watch(recentlyAddedSongsProvider);
+    final favorites = ref.watch(favoriteSongsProvider);
+    final libraryStats = ref.watch(libraryStatsProvider);
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -112,7 +117,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                         fontWeight: FontWeight.w400,
                       ),
                       decoration: InputDecoration(
-                        hintText: 'Artists, Songs, Lyrics, and More',
+                        hintText: 'Search songs, artists, albums...',
                         hintStyle: TextStyle(
                           color: AppColors.textSecondaryDark.withOpacity(0.6),
                           fontSize: 16,
@@ -168,11 +173,68 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
 
           // Content based on search state
           if (searchState.query.isEmpty) ...[
+            // Quick Access Section
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+                child: const Text(
+                  'Quick Access',
+                  style: TextStyle(
+                    color: AppColors.textPrimaryDark,
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -0.3,
+                  ),
+                ),
+              ),
+            ),
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              sliver: SliverGrid(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  mainAxisSpacing: 12,
+                  crossAxisSpacing: 12,
+                  childAspectRatio: 2.2,
+                ),
+                delegate: SliverChildListDelegate([
+                  _buildQuickAccessCard(
+                    'All Songs',
+                    '${libraryStats['songs']} songs',
+                    Iconsax.music_square,
+                    AppColors.accentBlue,
+                    () => context.push('/all-songs'),
+                  ),
+                  _buildQuickAccessCard(
+                    'Favorites',
+                    '${favorites.length} songs',
+                    Icons.favorite_rounded,
+                    AppColors.accentPink,
+                    () => context.push('/favorites'),
+                  ),
+                  _buildQuickAccessCard(
+                    'Albums',
+                    '${libraryStats['albums']} albums',
+                    Iconsax.cd,
+                    AppColors.accentPurple,
+                    () => context.push('/all-albums'),
+                  ),
+                  _buildQuickAccessCard(
+                    'Artists',
+                    '${libraryStats['artists']} artists',
+                    Iconsax.user,
+                    AppColors.accentGreen,
+                    () => context.push('/all-artists'),
+                  ),
+                ]),
+              ),
+            ),
+
             // Search history
             if (searchHistory.isNotEmpty) ...[
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  padding: const EdgeInsets.fromLTRB(20, 24, 20, 8),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -201,92 +263,109 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                   ),
                 ),
               ),
-              SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final query = searchHistory[index];
-                    return ListTile(
-                      leading: Icon(
-                        Iconsax.clock,
-                        color: AppColors.textSecondaryDark.withOpacity(0.6),
-                        size: 20,
-                      ),
-                      title: Text(
-                        query,
-                        style: const TextStyle(
-                          color: AppColors.textPrimaryDark,
-                          fontSize: 16,
+              SliverToBoxAdapter(
+                child: SizedBox(
+                  height: 44,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: searchHistory.length,
+                    itemBuilder: (context, index) {
+                      final query = searchHistory[index];
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: GestureDetector(
+                          onTap: () {
+                            _searchController.text = query;
+                            ref.read(searchProvider.notifier).setQuery(query);
+                            setState(() {});
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                            decoration: BoxDecoration(
+                              color: AppColors.glassDark.withOpacity(0.6),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: AppColors.glassBorder.withOpacity(0.2),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Iconsax.clock,
+                                  color: AppColors.textSecondaryDark.withOpacity(0.6),
+                                  size: 16,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  query,
+                                  style: TextStyle(
+                                    color: AppColors.textPrimaryDark,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
-                      ),
-                      trailing: IconButton(
-                        onPressed: () {
-                          ref.read(searchHistoryProvider.notifier).removeFromHistory(query);
-                        },
-                        icon: Icon(
-                          Icons.close,
-                          color: AppColors.textSecondaryDark.withOpacity(0.5),
-                          size: 18,
-                        ),
-                      ),
-                      onTap: () {
-                        _searchController.text = query;
-                        ref.read(searchProvider.notifier).setQuery(query);
-                        setState(() {});
-                      },
-                    );
-                  },
-                  childCount: searchHistory.length,
+                      );
+                    },
+                  ),
                 ),
               ),
             ],
 
-            // Browse categories
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
-                child: const Text(
-                  'Browse Categories',
-                  style: TextStyle(
-                    color: AppColors.textPrimaryDark,
-                    fontSize: 22,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: -0.3,
+            // Recently Added Section
+            if (recentlyAdded.isNotEmpty) ...[
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Recently Added',
+                        style: TextStyle(
+                          color: AppColors.textPrimaryDark,
+                          fontSize: 22,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: -0.3,
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () => context.push('/all-songs'),
+                        child: const Text(
+                          'See All',
+                          style: TextStyle(
+                            color: AppColors.primary,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
-            ),
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              sliver: SliverGrid(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  mainAxisSpacing: 12,
-                  crossAxisSpacing: 12,
-                  childAspectRatio: 1.5,
-                ),
+              SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
-                    final categories = [
-                      {'name': 'Pop', 'color': AppColors.accentPink, 'icon': Iconsax.music},
-                      {'name': 'Hip-Hop', 'color': AppColors.accentOrange, 'icon': Iconsax.microphone},
-                      {'name': 'Rock', 'color': AppColors.accentPurple, 'icon': Iconsax.music_square},
-                      {'name': 'Electronic', 'color': AppColors.accentBlue, 'icon': Iconsax.sound},
-                      {'name': 'R&B', 'color': AppColors.accentGreen, 'icon': Iconsax.heart},
-                      {'name': 'Jazz', 'color': AppColors.accentTeal, 'icon': Iconsax.music_filter},
-                      {'name': 'Classical', 'color': AppColors.accentIndigo, 'icon': Iconsax.note},
-                      {'name': 'Country', 'color': AppColors.accentOrange, 'icon': Iconsax.music_play},
-                    ];
-                    final category = categories[index];
-                    return _buildCategoryCard(
-                      category['name'] as String,
-                      category['color'] as Color,
-                      category['icon'] as IconData,
+                    final song = recentlyAdded[index];
+                    return SongTile(
+                      song: song,
+                      onTap: () {
+                        ref.read(audioPlayerServiceProvider).playQueue(
+                          recentlyAdded,
+                          startIndex: index,
+                        );
+                      },
                     );
                   },
-                  childCount: 8,
+                  childCount: recentlyAdded.take(5).length,
                 ),
               ),
-            ),
+            ],
           ] else ...[
             // Search results
             if (searchState.isLoading)
@@ -398,13 +477,32 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                           if (searchState.songs.isNotEmpty) ...[
                             Padding(
                               padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                              child: Text(
-                                'Songs',
-                                style: TextStyle(
-                                  color: AppColors.textSecondaryDark,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    'Songs (${searchState.songs.length})',
+                                    style: TextStyle(
+                                      color: AppColors.textSecondaryDark,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  if (searchState.songs.length > 5)
+                                    GestureDetector(
+                                      onTap: () {
+                                        // Show all songs in search
+                                      },
+                                      child: Text(
+                                        'See All',
+                                        style: TextStyle(
+                                          color: AppColors.primary,
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ),
+                                ],
                               ),
                             ),
                             ...searchState.songs.take(5).map((song) => SongTile(
@@ -422,7 +520,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                             Padding(
                               padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
                               child: Text(
-                                'Albums',
+                                'Albums (${searchState.albums.length})',
                                 style: TextStyle(
                                   color: AppColors.textSecondaryDark,
                                   fontSize: 14,
@@ -449,8 +547,12 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                                   fontSize: 13,
                                 ),
                               ),
+                              trailing: const Icon(
+                                Icons.chevron_right,
+                                color: AppColors.textSecondaryDark,
+                              ),
                               onTap: () {
-                                // Navigate to album
+                                context.push('/album/${album.id}', extra: album);
                               },
                             )),
                           ],
@@ -459,7 +561,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                             Padding(
                               padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
                               child: Text(
-                                'Artists',
+                                'Artists (${searchState.artists.length})',
                                 style: TextStyle(
                                   color: AppColors.textSecondaryDark,
                                   fontSize: 14,
@@ -489,11 +591,16 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                                   fontSize: 13,
                                 ),
                               ),
+                              trailing: const Icon(
+                                Icons.chevron_right,
+                                color: AppColors.textSecondaryDark,
+                              ),
                               onTap: () {
-                                // Navigate to artist
+                                context.push('/artist/${artist.id}', extra: artist);
                               },
                             )),
                           ],
+                          const SizedBox(height: 8),
                         ],
                       ),
                     ),
@@ -512,52 +619,84 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     );
   }
 
-  Widget _buildCategoryCard(String name, Color color, IconData icon) {
+  Widget _buildQuickAccessCard(
+    String title,
+    String subtitle,
+    IconData icon,
+    Color color,
+    VoidCallback onTap,
+  ) {
     return GestureDetector(
-      onTap: () {
-        // Navigate to category
-      },
+      onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              color.withOpacity(0.9),
-              color.withOpacity(0.6),
+              AppColors.glassDark.withOpacity(0.7),
+              AppColors.glassLight.withOpacity(0.5),
             ],
           ),
-          borderRadius: BorderRadius.circular(18),
-          boxShadow: [
-            BoxShadow(
-              color: color.withOpacity(0.3),
-              blurRadius: 16,
-              offset: const Offset(0, 8),
-              spreadRadius: -4,
-            ),
-          ],
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: color.withOpacity(0.3),
+            width: 1,
+          ),
         ),
-        padding: const EdgeInsets.all(16),
-        child: Stack(
+        child: Row(
           children: [
-            Positioned(
-              right: -10,
-              bottom: -10,
+            Container(
+              width: 50,
+              height: double.infinity,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    color.withOpacity(0.8),
+                    color.withOpacity(0.5),
+                  ],
+                ),
+                borderRadius: const BorderRadius.horizontal(left: Radius.circular(13)),
+              ),
               child: Icon(
                 icon,
-                size: 60,
-                color: Colors.white.withOpacity(0.2),
-              ),
-            ),
-            Text(
-              name,
-              style: const TextStyle(
                 color: Colors.white,
-                fontSize: 17,
-                fontWeight: FontWeight.w700,
-                letterSpacing: -0.2,
+                size: 24,
               ),
             ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      color: AppColors.textPrimaryDark,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      color: AppColors.textSecondaryDark.withOpacity(0.7),
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.chevron_right,
+              color: AppColors.textSecondaryDark.withOpacity(0.5),
+              size: 20,
+            ),
+            const SizedBox(width: 8),
           ],
         ),
       ),
@@ -565,22 +704,13 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   }
 
   Widget _buildAlbumArtwork(dynamic album) {
-    if (album.isLocal && album.localArtworkPath != null) {
+    if (album.localArtworkPath != null) {
       return Image.file(
         File(album.localArtworkPath!),
         width: 50,
         height: 50,
         fit: BoxFit.cover,
         errorBuilder: (context, error, stackTrace) => _buildAlbumPlaceholder(),
-      );
-    } else if (album.artworkUrl != null) {
-      return CachedNetworkImage(
-        imageUrl: album.artworkUrl!,
-        width: 50,
-        height: 50,
-        fit: BoxFit.cover,
-        placeholder: (context, url) => _buildAlbumPlaceholder(),
-        errorWidget: (context, url, error) => _buildAlbumPlaceholder(),
       );
     }
     return _buildAlbumPlaceholder();

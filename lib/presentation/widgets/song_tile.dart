@@ -3,7 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:iconsax/iconsax.dart';
+
 import '../../core/constants/app_colors.dart';
 import '../../domain/entities/song.dart';
 import '../../providers/audio_provider.dart';

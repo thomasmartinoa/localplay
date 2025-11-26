@@ -130,6 +130,20 @@ class PlaylistsNotifier extends StateNotifier<List<Playlist>> {
       return playlist;
     }).toList();
   }
+
+  void updatePlaylistSongs(String playlistId, List<Song> songs) {
+    state = state.map((playlist) {
+      if (playlist.id == playlistId) {
+        return playlist.copyWith(
+          songs: songs,
+          songCount: songs.length,
+          totalDuration: songs.fold<Duration>(Duration.zero, (total, s) => total + s.duration),
+          updatedAt: DateTime.now(),
+        );
+      }
+      return playlist;
+    }).toList();
+  }
 }
 
 /// Provider for a specific playlist

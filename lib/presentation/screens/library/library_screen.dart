@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:iconsax/iconsax.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../../../providers/audio_provider.dart';
 import '../../../providers/library_provider.dart';
 import '../../../providers/local_music_provider.dart';
 import '../../../services/local_music/local_music_scanner.dart';
@@ -83,35 +84,35 @@ class LibraryScreen extends ConsumerWidget {
                     icon: Iconsax.music_playlist,
                     title: 'Playlists',
                     subtitle: '${playlists.length} playlists',
-                    onTap: () {},
+                    onTap: () => context.push('/all-playlists'),
                   ),
                   _buildLibraryItem(
                     context,
                     icon: Iconsax.music,
                     title: 'Artists',
                     subtitle: '${localArtists.length} artists',
-                    onTap: () {},
+                    onTap: () => context.push('/all-artists'),
                   ),
                   _buildLibraryItem(
                     context,
                     icon: Iconsax.cd,
                     title: 'Albums',
                     subtitle: '${localAlbums.length} albums',
-                    onTap: () {},
+                    onTap: () => context.push('/all-albums'),
                   ),
                   _buildLibraryItem(
                     context,
                     icon: Iconsax.music_square,
                     title: 'Songs',
                     subtitle: '${localSongs.length} songs',
-                    onTap: () {},
+                    onTap: () => context.push('/all-songs'),
                   ),
                   _buildLibraryItem(
                     context,
                     icon: Iconsax.heart,
                     title: 'Favorites',
                     subtitle: '${favorites.length} songs',
-                    onTap: () {},
+                    onTap: () => context.push('/favorites'),
                   ),
                 ],
               ),
@@ -424,6 +425,8 @@ class LibraryScreen extends ConsumerWidget {
   }
 
   void _playSong(WidgetRef ref, dynamic song, List<dynamic> queue) {
-    // Will be connected to audio provider
+    final audioService = ref.read(audioPlayerServiceProvider);
+    final index = queue.indexOf(song);
+    audioService.playQueue(queue.cast(), startIndex: index >= 0 ? index : 0);
   }
 }

@@ -1,12 +1,16 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:go_router/go_router.dart';
+import 'package:iconsax/iconsax.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../domain/entities/artist.dart';
-import '../../widgets/album_card.dart';
+import '../../../providers/audio_provider.dart';
+import '../../../providers/local_music_provider.dart';
+import '../../widgets/song_tile.dart';
 
-/// Artist detail screen
+/// Artist detail screen showing local artist info and songs
 class ArtistScreen extends ConsumerWidget {
   final String artistId;
   final Artist? artist;
@@ -20,6 +24,9 @@ class ArtistScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final displayArtist = artist;
+    final audioService = ref.watch(audioPlayerServiceProvider);
+    final artistSongs = ref.watch(songsByArtistProvider(artistId));
+    final artistAlbums = ref.watch(albumsByArtistProvider(artistId));
 
     if (displayArtist == null) {
       return Scaffold(
@@ -39,7 +46,7 @@ class ArtistScreen extends ConsumerWidget {
         slivers: [
           // App bar with artist image
           SliverAppBar(
-            expandedHeight: 300,
+            expandedHeight: 280,
             pinned: true,
             backgroundColor: AppColors.backgroundDark,
             flexibleSpace: FlexibleSpaceBar(
@@ -52,21 +59,8 @@ class ArtistScreen extends ConsumerWidget {
               background: Stack(
                 fit: StackFit.expand,
                 children: [
-                  // Artist image
-                  if (displayArtist.imageUrl != null)
-                    CachedNetworkImage(
-                      imageUrl: displayArtist.imageUrl!,
-                      fit: BoxFit.cover,
-                    )
-                  else
-                    Container(
-                      color: AppColors.surfaceDark,
-                      child: const Icon(
-                        Icons.person,
-                        color: AppColors.textSecondaryDark,
-                        size: 100,
-                      ),
-                    ),
+                  // Artist image from first album or placeholder
+                  _buildArtistImage(displayArtist, artistAlbums),
                   // Gradient overlay
                   Container(
                     decoration: BoxDecoration(
@@ -86,39 +80,29 @@ class ArtistScreen extends ConsumerWidget {
             ),
           ),
 
-          // Artist info
+          // Artist info and controls
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Follower count and verified badge
-                  Row(
-                    children: [
-                      if (displayArtist.isVerified) ...[
-                        const Icon(
-                          Icons.verified,
-                          color: AppColors.accentBlue,
-                          size: 20,
-                        ),
-                        const SizedBox(width: 8),
-                      ],
-                      Text(
-                        displayArtist.formattedFollowerCount,
-                        style: AppTextStyles.subhead.copyWith(
-                          color: AppColors.textSecondaryDark,
-                        ),
-                      ),
-                    ],
+                  // Song/Album count
+                  Text(
+                    '${artistSongs.length} ${artistSongs.length == 1 ? 'song' : 'songs'} • ${artistAlbums.length} ${artistAlbums.length == 1 ? 'album' : 'albums'}',
+                    style: AppTextStyles.subhead.copyWith(
+                      color: AppColors.textSecondaryDark,
+                    ),
                   ),
                   const SizedBox(height: 16),
-                  // Play and follow buttons
+                  // Play and shuffle buttons
                   Row(
                     children: [
                       Expanded(
                         child: ElevatedButton.icon(
-                          onPressed: () {},
+                          onPressed: artistSongs.isNotEmpty
+                              ? () => audioService.playQueue(artistSongs)
+                              : null,
                           icon: const Icon(Icons.play_arrow_rounded),
                           label: const Text('Play'),
                           style: ElevatedButton.styleFrom(
@@ -130,9 +114,14 @@ class ArtistScreen extends ConsumerWidget {
                       const SizedBox(width: 12),
                       Expanded(
                         child: OutlinedButton.icon(
-                          onPressed: () {},
-                          icon: const Icon(Icons.person_add_outlined),
-                          label: const Text('Follow'),
+                          onPressed: artistSongs.isNotEmpty
+                              ? () {
+                                  audioService.setShuffle(true);
+                                  audioService.playQueue(artistSongs);
+                                }
+                              : null,
+                          icon: const Icon(Icons.shuffle_rounded),
+                          label: const Text('Shuffle'),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: AppColors.primary,
                             side: const BorderSide(color: AppColors.primary),
@@ -148,11 +137,87 @@ class ArtistScreen extends ConsumerWidget {
           ),
 
           // Albums section
+          if (artistAlbums.isNotEmpty) ...[
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                child: Text(
+                  'Albums',
+                  style: AppTextStyles.title3.copyWith(
+                    color: AppColors.textPrimaryDark,
+                  ),
+                ),
+              ),
+            ),
+            SliverToBoxAdapter(
+              child: SizedBox(
+                height: 180,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: artistAlbums.length,
+                  itemBuilder: (context, index) {
+                    final album = artistAlbums[index];
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 16),
+                      child: GestureDetector(
+                        onTap: () => context.push('/album/${album.id}', extra: album),
+                        child: SizedBox(
+                          width: 130,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                width: 130,
+                                height: 130,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(12),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: AppColors.shadowDark.withOpacity(0.3),
+                                      blurRadius: 12,
+                                      offset: const Offset(0, 6),
+                                    ),
+                                  ],
+                                ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: _buildAlbumArtwork(album),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                album.title,
+                                style: AppTextStyles.subhead.copyWith(
+                                  color: AppColors.textPrimaryDark,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              if (album.releaseYear > 0)
+                                Text(
+                                  album.releaseYear.toString(),
+                                  style: AppTextStyles.caption1.copyWith(
+                                    color: AppColors.textSecondaryDark,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+          ],
+
+          // Songs section
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
               child: Text(
-                'Albums',
+                'Songs',
                 style: AppTextStyles.title3.copyWith(
                   color: AppColors.textPrimaryDark,
                 ),
@@ -160,13 +225,13 @@ class ArtistScreen extends ConsumerWidget {
             ),
           ),
 
-          if (displayArtist.albums.isEmpty)
+          if (artistSongs.isEmpty)
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.all(32),
                 child: Center(
                   child: Text(
-                    'No albums available',
+                    'No songs available',
                     style: AppTextStyles.body.copyWith(
                       color: AppColors.textSecondaryDark,
                     ),
@@ -175,47 +240,16 @@ class ArtistScreen extends ConsumerWidget {
               ),
             )
           else
-            SliverToBoxAdapter(
-              child: SizedBox(
-                height: 200,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: displayArtist.albums.length,
-                  itemBuilder: (context, index) {
-                    final album = displayArtist.albums[index];
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 16),
-                      child: AlbumCard(album: album),
-                    );
-                  },
-                ),
-              ),
-            ),
-
-          // Bio section
-          if (displayArtist.bio != null)
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'About',
-                      style: AppTextStyles.title3.copyWith(
-                        color: AppColors.textPrimaryDark,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      displayArtist.bio!,
-                      style: AppTextStyles.body.copyWith(
-                        color: AppColors.textSecondaryDark,
-                      ),
-                    ),
-                  ],
-                ),
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  final song = artistSongs[index];
+                  return SongTile(
+                    song: song,
+                    onTap: () => audioService.playQueue(artistSongs, startIndex: index),
+                  );
+                },
+                childCount: artistSongs.length,
               ),
             ),
 
@@ -224,6 +258,88 @@ class ArtistScreen extends ConsumerWidget {
             child: SizedBox(height: 160),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildArtistImage(Artist artist, List<dynamic> albums) {
+    // Try to use first album artwork
+    if (albums.isNotEmpty) {
+      final firstAlbum = albums.first;
+      if (firstAlbum.localArtworkPath != null) {
+        final file = File(firstAlbum.localArtworkPath!);
+        if (file.existsSync()) {
+          return Image.file(
+            file,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stack) => _buildArtistPlaceholder(),
+          );
+        }
+      }
+    }
+    
+    // Check artist image
+    if (artist.imageUrl != null) {
+      final file = File(artist.imageUrl!);
+      if (file.existsSync()) {
+        return Image.file(
+          file,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stack) => _buildArtistPlaceholder(),
+        );
+      }
+    }
+    
+    return _buildArtistPlaceholder();
+  }
+
+  Widget _buildArtistPlaceholder() {
+    return Container(
+      color: AppColors.surfaceDark,
+      child: Center(
+        child: Icon(
+          Iconsax.user,
+          color: AppColors.textSecondaryDark.withOpacity(0.5),
+          size: 80,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAlbumArtwork(dynamic album) {
+    if (album.localArtworkPath != null) {
+      final file = File(album.localArtworkPath!);
+      if (file.existsSync()) {
+        return Image.file(
+          file,
+          fit: BoxFit.cover,
+          width: 130,
+          height: 130,
+          errorBuilder: (context, error, stack) => _buildAlbumPlaceholder(),
+        );
+      }
+    }
+    return _buildAlbumPlaceholder();
+  }
+
+  Widget _buildAlbumPlaceholder() {
+    return Container(
+      width: 130,
+      height: 130,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppColors.glassDark,
+            AppColors.glassLight,
+          ],
+        ),
+      ),
+      child: Icon(
+        Iconsax.cd,
+        color: AppColors.textSecondaryDark.withOpacity(0.5),
+        size: 48,
       ),
     );
   }
