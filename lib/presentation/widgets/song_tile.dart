@@ -3,8 +3,12 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:iconsax/iconsax.dart';
 import '../../core/constants/app_colors.dart';
 import '../../domain/entities/song.dart';
+import '../../providers/audio_provider.dart';
+import '../../providers/library_provider.dart';
+import 'add_to_playlist_sheet.dart';
 
 /// Glass-styled song tile widget for displaying a song in a list
 class SongTile extends ConsumerStatefulWidget {
@@ -434,31 +438,86 @@ class _SongTileState extends ConsumerState<SongTile> with SingleTickerProviderSt
                 ),
                 // Options
                 _buildOptionTile(
+                  context: context,
                   icon: Icons.play_circle_outline_rounded,
                   title: 'Play Next',
-                  onTap: () => Navigator.pop(context),
+                  onTap: () {
+                    ref.read(audioPlayerServiceProvider).playNext(widget.song);
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('${widget.song.title} will play next'),
+                        behavior: SnackBarBehavior.floating,
+                        backgroundColor: AppColors.glassDark,
+                      ),
+                    );
+                  },
                 ),
                 _buildOptionTile(
+                  context: context,
+                  icon: Icons.queue_music_rounded,
+                  title: 'Add to Queue',
+                  onTap: () {
+                    ref.read(audioPlayerServiceProvider).addToQueue(widget.song);
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Added ${widget.song.title} to queue'),
+                        behavior: SnackBarBehavior.floating,
+                        backgroundColor: AppColors.glassDark,
+                      ),
+                    );
+                  },
+                ),
+                _buildOptionTile(
+                  context: context,
                   icon: Icons.playlist_add_rounded,
                   title: 'Add to Playlist',
-                  onTap: () => Navigator.pop(context),
+                  onTap: () {
+                    Navigator.pop(context);
+                    AddToPlaylistSheet.show(context, widget.song);
+                  },
+                ),
+                Consumer(
+                  builder: (context, ref, child) {
+                    final isFavorite = ref.watch(isSongFavoriteProvider(widget.song.id));
+                    return _buildOptionTile(
+                      context: context,
+                      icon: isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                      title: isFavorite ? 'Remove from Favorites' : 'Add to Favorites',
+                      iconColor: isFavorite ? AppColors.accentPink : null,
+                      onTap: () {
+                        ref.read(favoriteSongsProvider.notifier).toggleFavorite(widget.song);
+                        Navigator.pop(context);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              isFavorite 
+                                ? 'Removed from Favorites' 
+                                : 'Added to Favorites',
+                            ),
+                            behavior: SnackBarBehavior.floating,
+                            backgroundColor: AppColors.glassDark,
+                          ),
+                        );
+                      },
+                    );
+                  },
                 ),
                 _buildOptionTile(
-                  icon: Icons.favorite_border_rounded,
-                  title: 'Add to Favorites',
-                  onTap: () => Navigator.pop(context),
-                ),
-                _buildOptionTile(
+                  context: context,
                   icon: Icons.album_rounded,
                   title: 'Go to Album',
                   onTap: () => Navigator.pop(context),
                 ),
                 _buildOptionTile(
+                  context: context,
                   icon: Icons.person_outline_rounded,
                   title: 'Go to Artist',
                   onTap: () => Navigator.pop(context),
                 ),
                 _buildOptionTile(
+                  context: context,
                   icon: Icons.share_rounded,
                   title: 'Share Song',
                   onTap: () => Navigator.pop(context),
@@ -473,9 +532,11 @@ class _SongTileState extends ConsumerState<SongTile> with SingleTickerProviderSt
   }
 
   Widget _buildOptionTile({
+    required BuildContext context,
     required IconData icon,
     required String title,
     required VoidCallback onTap,
+    Color? iconColor,
   }) {
     return Material(
       color: Colors.transparent,
@@ -487,7 +548,7 @@ class _SongTileState extends ConsumerState<SongTile> with SingleTickerProviderSt
             children: [
               Icon(
                 icon,
-                color: AppColors.textPrimaryDark,
+                color: iconColor ?? AppColors.textPrimaryDark,
                 size: 24,
               ),
               const SizedBox(width: 16),

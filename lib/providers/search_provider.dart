@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../domain/entities/entities.dart';
+import '../domain/entities/entities.dart';
+import 'local_music_provider.dart';
 
 /// Search state
 class SearchState {
@@ -45,13 +46,15 @@ class SearchState {
     songs.isNotEmpty || albums.isNotEmpty || artists.isNotEmpty || playlists.isNotEmpty;
 }
 
-/// Search provider
+/// Search provider that searches local music
 final searchProvider = StateNotifierProvider<SearchNotifier, SearchState>((ref) {
-  return SearchNotifier();
+  return SearchNotifier(ref);
 });
 
 class SearchNotifier extends StateNotifier<SearchState> {
-  SearchNotifier() : super(const SearchState());
+  final Ref _ref;
+  
+  SearchNotifier(this._ref) : super(const SearchState());
 
   void setQuery(String query) {
     state = state.copyWith(query: query);
@@ -66,13 +69,34 @@ class SearchNotifier extends StateNotifier<SearchState> {
     state = state.copyWith(isLoading: true, error: null);
     
     try {
-      // TODO: Implement actual search logic
-      // For now, this is a placeholder that would connect to your data source
-      await Future.delayed(const Duration(milliseconds: 300));
+      final lowerQuery = query.toLowerCase();
+      
+      // Search local songs
+      final allSongs = _ref.read(localSongsProvider);
+      final matchingSongs = allSongs.where((song) =>
+        song.title.toLowerCase().contains(lowerQuery) ||
+        song.artist.toLowerCase().contains(lowerQuery) ||
+        song.album.toLowerCase().contains(lowerQuery)
+      ).toList();
+      
+      // Search local albums  
+      final allAlbums = _ref.read(localAlbumsProvider);
+      final matchingAlbums = allAlbums.where((album) =>
+        album.title.toLowerCase().contains(lowerQuery) ||
+        album.artist.toLowerCase().contains(lowerQuery)
+      ).toList();
+      
+      // Search local artists
+      final allArtists = _ref.read(localArtistsProvider);
+      final matchingArtists = allArtists.where((artist) =>
+        artist.name.toLowerCase().contains(lowerQuery)
+      ).toList();
       
       state = state.copyWith(
         isLoading: false,
-        // Results would be populated from your data source
+        songs: matchingSongs,
+        albums: matchingAlbums,
+        artists: matchingArtists,
       );
     } catch (e) {
       state = state.copyWith(

@@ -1,11 +1,13 @@
+import 'dart:io';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../providers/search_provider.dart';
+import '../../../providers/audio_provider.dart';
 import '../../widgets/song_tile.dart';
-import '../../../data/sample_data.dart';
 
 /// Glass-styled search screen for discovering music
 class SearchScreen extends ConsumerStatefulWidget {
@@ -390,18 +392,109 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                     child: BackdropFilter(
                       filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                       child: Column(
-                        children: List.generate(
-                          SampleData.songs.length.clamp(0, 10),
-                          (index) {
-                            final song = SampleData.songs[index];
-                            return SongTile(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Songs section
+                          if (searchState.songs.isNotEmpty) ...[
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                              child: Text(
+                                'Songs',
+                                style: TextStyle(
+                                  color: AppColors.textSecondaryDark,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                            ...searchState.songs.take(5).map((song) => SongTile(
                               song: song,
                               onTap: () {
-                                // Play song
+                                ref.read(audioPlayerServiceProvider).playQueue(
+                                  searchState.songs,
+                                  startIndex: searchState.songs.indexOf(song),
+                                );
                               },
-                            );
-                          },
-                        ),
+                            )),
+                          ],
+                          // Albums section
+                          if (searchState.albums.isNotEmpty) ...[
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                              child: Text(
+                                'Albums',
+                                style: TextStyle(
+                                  color: AppColors.textSecondaryDark,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                            ...searchState.albums.take(3).map((album) => ListTile(
+                              leading: ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: _buildAlbumArtwork(album),
+                              ),
+                              title: Text(
+                                album.title,
+                                style: const TextStyle(
+                                  color: AppColors.textPrimaryDark,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              subtitle: Text(
+                                '${album.artist} • ${album.songCount} songs',
+                                style: TextStyle(
+                                  color: AppColors.textSecondaryDark.withOpacity(0.7),
+                                  fontSize: 13,
+                                ),
+                              ),
+                              onTap: () {
+                                // Navigate to album
+                              },
+                            )),
+                          ],
+                          // Artists section
+                          if (searchState.artists.isNotEmpty) ...[
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                              child: Text(
+                                'Artists',
+                                style: TextStyle(
+                                  color: AppColors.textSecondaryDark,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                            ...searchState.artists.take(3).map((artist) => ListTile(
+                              leading: CircleAvatar(
+                                backgroundColor: AppColors.glassDark,
+                                child: Icon(
+                                  Icons.person,
+                                  color: AppColors.textSecondaryDark,
+                                ),
+                              ),
+                              title: Text(
+                                artist.name,
+                                style: const TextStyle(
+                                  color: AppColors.textPrimaryDark,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              subtitle: Text(
+                                '${artist.albumCount} albums',
+                                style: TextStyle(
+                                  color: AppColors.textSecondaryDark.withOpacity(0.7),
+                                  fontSize: 13,
+                                ),
+                              ),
+                              onTap: () {
+                                // Navigate to artist
+                              },
+                            )),
+                          ],
+                        ],
                       ),
                     ),
                   ),
@@ -467,6 +560,44 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildAlbumArtwork(dynamic album) {
+    if (album.isLocal && album.localArtworkPath != null) {
+      return Image.file(
+        File(album.localArtworkPath!),
+        width: 50,
+        height: 50,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => _buildAlbumPlaceholder(),
+      );
+    } else if (album.artworkUrl != null) {
+      return CachedNetworkImage(
+        imageUrl: album.artworkUrl!,
+        width: 50,
+        height: 50,
+        fit: BoxFit.cover,
+        placeholder: (context, url) => _buildAlbumPlaceholder(),
+        errorWidget: (context, url, error) => _buildAlbumPlaceholder(),
+      );
+    }
+    return _buildAlbumPlaceholder();
+  }
+
+  Widget _buildAlbumPlaceholder() {
+    return Container(
+      width: 50,
+      height: 50,
+      decoration: BoxDecoration(
+        color: AppColors.glassDark,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: const Icon(
+        Icons.album,
+        color: AppColors.textSecondaryDark,
+        size: 24,
       ),
     );
   }

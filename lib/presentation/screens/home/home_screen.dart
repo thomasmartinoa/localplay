@@ -65,35 +65,6 @@ class HomeScreen extends ConsumerWidget {
                 ),
               ),
             ),
-            actions: [
-              Container(
-                margin: const EdgeInsets.only(right: 16),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: AppColors.primaryGradient,
-                  ),
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.primary.withOpacity(0.4),
-                      blurRadius: 12,
-                      spreadRadius: -2,
-                    ),
-                  ],
-                ),
-                child: const CircleAvatar(
-                  radius: 18,
-                  backgroundColor: Colors.transparent,
-                  child: Icon(
-                    Icons.person,
-                    size: 20,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ],
           ),
 
           // Empty state if no music

@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -109,17 +110,7 @@ class MiniPlayer extends ConsumerWidget {
                           ),
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(12),
-                            child: song.artworkUrl != null
-                                ? CachedNetworkImage(
-                                    imageUrl: song.artworkUrl!,
-                                    width: 50,
-                                    height: 50,
-                                    fit: BoxFit.cover,
-                                    placeholder: (context, url) => _buildPlaceholder(),
-                                    errorWidget: (context, url, error) =>
-                                        _buildPlaceholder(),
-                                  )
-                                : _buildPlaceholder(),
+                            child: _buildArtwork(song),
                           ),
                         ),
                         const SizedBox(width: 14),
@@ -252,5 +243,27 @@ class MiniPlayer extends ConsumerWidget {
         size: 24,
       ),
     );
+  }
+
+  Widget _buildArtwork(dynamic song) {
+    if (song.isLocal && song.localArtworkPath != null) {
+      return Image.file(
+        File(song.localArtworkPath!),
+        width: 50,
+        height: 50,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => _buildPlaceholder(),
+      );
+    } else if (song.artworkUrl != null) {
+      return CachedNetworkImage(
+        imageUrl: song.artworkUrl!,
+        width: 50,
+        height: 50,
+        fit: BoxFit.cover,
+        placeholder: (context, url) => _buildPlaceholder(),
+        errorWidget: (context, url, error) => _buildPlaceholder(),
+      );
+    }
+    return _buildPlaceholder();
   }
 }
