@@ -7,7 +7,7 @@ import 'dart:convert';
 
 /// Service to extract embedded artwork from audio files using platform channels
 class ArtworkExtractor {
-  static const MethodChannel _channel = MethodChannel('com.example.applemusic_clone/artwork');
+  static const MethodChannel _channel = MethodChannel('com.example.localplay/artwork');
   
   Directory? _artworkCacheDir;
 

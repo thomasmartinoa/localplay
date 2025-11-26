@@ -1,4 +1,4 @@
-package com.example.applemusic_clone
+package com.example.localplay
 
 import android.media.MediaMetadataRetriever
 import io.flutter.embedding.android.FlutterActivity
@@ -7,7 +7,7 @@ import io.flutter.plugin.common.MethodChannel
 import java.io.File
 
 class MainActivity : FlutterActivity() {
-    private val CHANNEL = "com.example.applemusic_clone/artwork"
+    private val CHANNEL = "com.example.localplay/artwork"
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)

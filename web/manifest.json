@@ -1,11 +1,11 @@
 {
-    "name": "Apple Music Clone",
-    "short_name": "Apple Music Clone",
+    "name": "LocalPlay",
+    "short_name": "LocalPlay",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "Offline local music player",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

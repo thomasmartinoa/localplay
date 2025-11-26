@@ -1,5 +1,5 @@
-name: applemusic_clone
-description: "A music streaming app like Apple Music built with Flutter."
+name: localplay
+description: "LocalPlay - Offline local music player built with Flutter."
 publish_to: 'none'
 version: 0.1.0
 

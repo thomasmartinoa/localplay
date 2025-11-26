@@ -43,7 +43,7 @@ class MusicApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      title: 'Music',
+      title: 'LocalPlay',
       debugShowCheckedModeBanner: false,
       
       // Theme configuration
