@@ -1,28 +1,26 @@
-# Apple Music Clone
+# LocalPlay 🎵
 
-A beautiful Apple Music-inspired music player app built with Flutter.
+A  offline music player for Android & iOS, built with Flutter. Play your local music collection with an Apple Music-inspired interface.
 
-## Features
+*Your music. Your device. No internet required.*
 
-- 🎵 Music playback with audio controls
-- 📚 Library management (playlists, favorites, albums)
-- 🎨 Dark theme UI inspired by Apple Music
-- 🔄 Smooth navigation with Go Router
+---
+
+## ✨ Features
+
+### Music Playback
+- 🎵 **Play local audio files** - MP3, M4A, FLAC, WAV, OGG, and more
+- 🎨 **Automatic artwork extraction** - Embedded album art from your files
+- 🔀 **Shuffle & Repeat** - Loop single tracks or entire playlists
+- ▶️ **Queue management** - Add to queue, play next, reorder tracks
+- 🔊 **Background playback** - Keep listening while using other apps
+
+### Library Management
+- 📁 **Folder scanning** - Choose which folders to scan for music
+- 📚 **Auto-organized library** - Songs, Albums, Artists, Genres
+- ❤️ **Favorites** - Mark songs you love
+- 📝 **Playlists** - Create and manage custom playlists
+- 🕐 **Recently Added & Played** - Quick access to new and recent music
+- 🔍 **Search** - Find anything in your library instantly
 
 
-### Installation
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/thomasmartinoa/applemusic_clone.git
-   ```
-
-2. Install dependencies:
-   ```bash
-   flutter pub get
-   ```
-
-3. Run the app:
-   ```bash
-   flutter run
-   ```
