@@ -1,0 +1,58 @@
+name: applemusic_clone
+description: "A music streaming app like Apple Music built with Flutter."
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: ^3.10.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State Management
+  flutter_riverpod: ^2.5.1
+  riverpod_annotation: ^2.3.5
+
+  # Audio Playback
+  just_audio: ^0.9.40
+  just_audio_background: ^0.0.1-beta.13
+  audio_service: ^0.18.15
+  audio_session: ^0.1.21
+
+  # Navigation
+  go_router: ^14.2.7
+
+  # UI & Design
+  flutter_svg: ^2.0.10+1
+  cached_network_image: ^3.4.1
+  shimmer: ^3.0.0
+  palette_generator: ^0.3.3+4
+  marquee: ^2.2.3
+
+  # Local Storage
+  hive_flutter: ^1.1.0
+  shared_preferences: ^2.3.2
+
+  # Utilities
+  uuid: ^4.5.1
+  intl: ^0.19.0
+  collection: ^1.18.0
+  rxdart: ^0.28.0
+  equatable: ^2.0.5
+
+  # Icons
+  iconsax: ^0.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  build_runner: ^2.4.12
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/icons/
