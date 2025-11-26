@@ -21,141 +21,152 @@ class HomeScreen extends ConsumerWidget {
     final localAlbums = ref.watch(localAlbumsProvider);
     final recentlyAdded = ref.watch(recentlyAddedSongsProvider);
 
+    final statusBarHeight = MediaQuery.of(context).padding.top;
+    
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: CustomScrollView(
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          // Glass App bar
-          SliverAppBar(
-            pinned: true,
-            expandedHeight: 100,
-            backgroundColor: Colors.transparent,
-            flexibleSpace: ClipRRect(
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-                child: FlexibleSpaceBar(
-                  titlePadding: const EdgeInsets.only(left: 20, bottom: 16),
-                  title: ShaderMask(
-                    shaderCallback: (bounds) => const LinearGradient(
-                      colors: [Colors.white, Color(0xFFE0E0E0)],
-                    ).createShader(bounds),
-                    child: const Text(
-                      'Listen Now',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 32,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: -0.5,
+      body: Stack(
+        children: [
+          // Main scrollable content
+          CustomScrollView(
+            physics: const BouncingScrollPhysics(),
+            slivers: [
+              // Space for the floating header
+              SliverToBoxAdapter(
+                child: SizedBox(height: statusBarHeight + 60),
+              ),
+
+              // Empty state if no music
+              if (localSongs.isEmpty)
+                SliverToBoxAdapter(child: _buildEmptyState(context))
+              else ...[
+                // Albums section
+                if (localAlbums.isNotEmpty) ...[
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: SectionHeader(
+                        title: 'Your Albums',
+                        onSeeAll: () {},
                       ),
                     ),
                   ),
-                  background: Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          AppColors.glassDark.withOpacity(0.6),
-                          Colors.transparent,
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-
-          // Empty state if no music
-          if (localSongs.isEmpty)
-            SliverToBoxAdapter(child: _buildEmptyState(context))
-          else ...[
-            // Albums section
-            if (localAlbums.isNotEmpty) ...[
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: SectionHeader(
-                    title: 'Your Albums',
-                    onSeeAll: () {},
-                  ),
-                ),
-              ),
-              SliverToBoxAdapter(
-                child: SizedBox(
-                  height: 240,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    itemCount: localAlbums.take(10).length,
-                    itemBuilder: (context, index) {
-                      final album = localAlbums[index];
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 16),
-                        child: AlbumCard(
-                          album: album,
-                          size: 180,
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ),
-              const SliverToBoxAdapter(child: SizedBox(height: 28)),
-            ],
-
-            // Recently Added section
-            SliverToBoxAdapter(
-              child: SectionHeader(
-                title: 'Recently Added',
-                onSeeAll: () {},
-              ),
-            ),
-            SliverToBoxAdapter(
-              child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 16),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      AppColors.glassDark.withOpacity(0.6),
-                      AppColors.glassLight.withOpacity(0.4),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: AppColors.glassBorder.withOpacity(0.2),
-                    width: 1,
-                  ),
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(20),
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                    child: Column(
-                      children: List.generate(
-                        recentlyAdded.take(5).length,
-                        (index) {
-                          final song = recentlyAdded[index];
-                          return SongTile(
-                            song: song,
-                            onTap: () => _playSong(context, ref, song, recentlyAdded),
+                  SliverToBoxAdapter(
+                    child: SizedBox(
+                      height: 240,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        physics: const BouncingScrollPhysics(),
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        itemCount: localAlbums.take(10).length,
+                        itemBuilder: (context, index) {
+                          final album = localAlbums[index];
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 16),
+                            child: AlbumCard(
+                              album: album,
+                              size: 180,
+                            ),
                           );
                         },
                       ),
                     ),
                   ),
+                  const SliverToBoxAdapter(child: SizedBox(height: 28)),
+                ],
+
+                // Recently Added section
+                SliverToBoxAdapter(
+                  child: SectionHeader(
+                    title: 'Recently Added',
+                    onSeeAll: () {},
+                  ),
+                ),
+                SliverToBoxAdapter(
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 16),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          AppColors.glassDark.withOpacity(0.6),
+                          AppColors.glassLight.withOpacity(0.4),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: AppColors.glassBorder.withOpacity(0.2),
+                        width: 1,
+                      ),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                        child: Column(
+                          children: List.generate(
+                            recentlyAdded.take(5).length,
+                            (index) {
+                              final song = recentlyAdded[index];
+                              return SongTile(
+                                song: song,
+                                onTap: () => _playSong(context, ref, song, recentlyAdded),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+
+              // Bottom padding for mini player and nav bar
+              const SliverToBoxAdapter(
+                child: SizedBox(height: 180),
+              ),
+            ],
+          ),
+          
+          // Floating header with smooth gradient fade
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: IgnorePointer(
+              child: Container(
+                height: statusBarHeight + 80,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      AppColors.backgroundGradientStart,
+                      AppColors.backgroundGradientStart,
+                      AppColors.backgroundGradientStart.withOpacity(0.95),
+                      AppColors.backgroundGradientStart.withOpacity(0.7),
+                      AppColors.backgroundGradientStart.withOpacity(0.3),
+                      Colors.transparent,
+                    ],
+                    stops: const [0.0, 0.3, 0.5, 0.7, 0.85, 1.0],
+                  ),
                 ),
               ),
             ),
-          ],
-
-          // Bottom padding for mini player and nav bar
-          const SliverToBoxAdapter(
-            child: SizedBox(height: 180),
+          ),
+          
+          // Title text on top of gradient
+          Positioned(
+            top: statusBarHeight + 8,
+            left: 20,
+            child: Text(
+              'Listen Now',
+              style: AppTextStyles.largeTitle.copyWith(
+                color: AppColors.textPrimaryDark,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ],
       ),

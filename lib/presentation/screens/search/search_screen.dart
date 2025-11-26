@@ -37,54 +37,22 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     final recentlyAdded = ref.watch(recentlyAddedSongsProvider);
     final favorites = ref.watch(favoriteSongsProvider);
     final libraryStats = ref.watch(libraryStatsProvider);
+    final statusBarHeight = MediaQuery.of(context).padding.top;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: CustomScrollView(
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          // Glass App bar
-          SliverAppBar(
-            pinned: true,
-            expandedHeight: 100,
-            backgroundColor: Colors.transparent,
-            flexibleSpace: ClipRRect(
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-                child: FlexibleSpaceBar(
-                  titlePadding: const EdgeInsets.only(left: 20, bottom: 16),
-                  title: ShaderMask(
-                    shaderCallback: (bounds) => const LinearGradient(
-                      colors: [Colors.white, Color(0xFFE0E0E0)],
-                    ).createShader(bounds),
-                    child: const Text(
-                      'Search',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 32,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: -0.5,
-                      ),
-                    ),
-                  ),
-                  background: Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          AppColors.glassDark.withOpacity(0.6),
-                          Colors.transparent,
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
+      body: Stack(
+        children: [
+          // Main scrollable content
+          CustomScrollView(
+            physics: const BouncingScrollPhysics(),
+            slivers: [
+              // Space for floating header
+              SliverToBoxAdapter(
+                child: SizedBox(height: statusBarHeight + 60),
               ),
-            ),
-          ),
 
-          // Glass Search bar
+              // Glass Search bar
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
@@ -613,6 +581,50 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           // Bottom padding
           const SliverToBoxAdapter(
             child: SizedBox(height: 180),
+          ),
+            ],
+          ),
+          
+          // Floating header with smooth gradient fade
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: IgnorePointer(
+              child: Container(
+                height: statusBarHeight + 80,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      AppColors.backgroundGradientStart,
+                      AppColors.backgroundGradientStart,
+                      AppColors.backgroundGradientStart.withOpacity(0.95),
+                      AppColors.backgroundGradientStart.withOpacity(0.7),
+                      AppColors.backgroundGradientStart.withOpacity(0.3),
+                      Colors.transparent,
+                    ],
+                    stops: const [0.0, 0.3, 0.5, 0.7, 0.85, 1.0],
+                  ),
+                ),
+              ),
+            ),
+          ),
+          
+          // Title text on top of gradient
+          Positioned(
+            top: statusBarHeight + 8,
+            left: 20,
+            child: const Text(
+              'Search',
+              style: TextStyle(
+                color: AppColors.textPrimaryDark,
+                fontSize: 32,
+                fontWeight: FontWeight.w700,
+                letterSpacing: -0.5,
+              ),
+            ),
           ),
         ],
       ),

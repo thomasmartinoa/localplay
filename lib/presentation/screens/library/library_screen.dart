@@ -24,52 +24,29 @@ class LibraryScreen extends ConsumerWidget {
     final localArtists = ref.watch(localArtistsProvider);
     final recentlyAdded = ref.watch(recentlyAddedSongsProvider);
     final scanProgressAsync = ref.watch(scanProgressProvider);
+    final statusBarHeight = MediaQuery.of(context).padding.top;
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundDark,
-      body: CustomScrollView(
-        slivers: [
-          // App bar
-          SliverAppBar(
-            pinned: true,
-            expandedHeight: 80,
-            backgroundColor: AppColors.backgroundDark,
-            flexibleSpace: FlexibleSpaceBar(
-              titlePadding: const EdgeInsets.only(left: 16, bottom: 16),
-              title: Text(
-                'Library',
-                style: AppTextStyles.largeTitle.copyWith(
-                  color: AppColors.textPrimaryDark,
-                ),
+      backgroundColor: Colors.transparent,
+      body: Stack(
+        children: [
+          // Main scrollable content
+          CustomScrollView(
+            physics: const BouncingScrollPhysics(),
+            slivers: [
+              // Space for floating header
+              SliverToBoxAdapter(
+                child: SizedBox(height: statusBarHeight + 60),
               ),
-            ),
-            actions: [
-              IconButton(
-                onPressed: () => context.push('/settings'),
-                icon: const Icon(
-                  Iconsax.setting_2,
-                  color: AppColors.primary,
-                ),
-              ),
-              IconButton(
-                onPressed: () => _showCreatePlaylistDialog(context, ref),
-                icon: const Icon(
-                  Iconsax.add,
-                  color: AppColors.primary,
-                ),
-              ),
-              const SizedBox(width: 8),
-            ],
-          ),
 
-          // Scan Progress Card
-          scanProgressAsync.when(
-            data: (progress) => progress.isScanning
-                ? SliverToBoxAdapter(child: _buildScanProgressCard(progress))
-                : const SliverToBoxAdapter(child: SizedBox.shrink()),
-            loading: () => const SliverToBoxAdapter(child: SizedBox.shrink()),
-            error: (_, __) => const SliverToBoxAdapter(child: SizedBox.shrink()),
-          ),
+              // Scan Progress Card
+              scanProgressAsync.when(
+                data: (progress) => progress.isScanning
+                    ? SliverToBoxAdapter(child: _buildScanProgressCard(progress))
+                    : const SliverToBoxAdapter(child: SizedBox.shrink()),
+                loading: () => const SliverToBoxAdapter(child: SizedBox.shrink()),
+                error: (_, __) => const SliverToBoxAdapter(child: SizedBox.shrink()),
+              ),
 
           // Empty State or Library Content
           if (localSongs.isEmpty)
@@ -206,6 +183,72 @@ class LibraryScreen extends ConsumerWidget {
           // Bottom padding
           const SliverToBoxAdapter(
             child: SizedBox(height: 160),
+          ),
+            ],
+          ),
+          
+          // Floating header with smooth gradient fade
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: IgnorePointer(
+              child: Container(
+                height: statusBarHeight + 80,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      AppColors.backgroundGradientStart,
+                      AppColors.backgroundGradientStart,
+                      AppColors.backgroundGradientStart.withOpacity(0.95),
+                      AppColors.backgroundGradientStart.withOpacity(0.7),
+                      AppColors.backgroundGradientStart.withOpacity(0.3),
+                      Colors.transparent,
+                    ],
+                    stops: const [0.0, 0.3, 0.5, 0.7, 0.85, 1.0],
+                  ),
+                ),
+              ),
+            ),
+          ),
+          
+          // Title and action buttons on top of gradient
+          Positioned(
+            top: statusBarHeight + 8,
+            left: 20,
+            right: 16,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Library',
+                  style: AppTextStyles.largeTitle.copyWith(
+                    color: AppColors.textPrimaryDark,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Row(
+                  children: [
+                    IconButton(
+                      onPressed: () => context.push('/settings'),
+                      icon: const Icon(
+                        Iconsax.setting_2,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => _showCreatePlaylistDialog(context, ref),
+                      icon: const Icon(
+                        Iconsax.add,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ],
       ),
