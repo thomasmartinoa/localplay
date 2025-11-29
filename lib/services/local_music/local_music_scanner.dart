@@ -79,14 +79,31 @@ class LocalMusicScanner {
 
   /// Request storage permissions
   Future<bool> requestPermissions() async {
-    // For Android 13+, use audio permission
+    // For Android
     if (Platform.isAndroid) {
+      // For Android 13+ (API 33+), use audio permission
       final audioPermission = await Permission.audio.request();
-      if (audioPermission.isGranted) return true;
+      if (audioPermission.isGranted) {
+        print('Audio permission granted');
+        return true;
+      }
+      
+      // For Android 11+ (API 30+), may need manage external storage
+      final managePermission = await Permission.manageExternalStorage.request();
+      if (managePermission.isGranted) {
+        print('Manage external storage permission granted');
+        return true;
+      }
       
       // Fallback to storage permission for older Android versions
       final storagePermission = await Permission.storage.request();
-      return storagePermission.isGranted;
+      if (storagePermission.isGranted) {
+        print('Storage permission granted');
+        return true;
+      }
+      
+      print('No storage permissions granted');
+      return false;
     }
     
     // For iOS
@@ -129,26 +146,105 @@ class LocalMusicScanner {
     return _supportedExtensions.any((e) => ext.endsWith(e));
   }
 
+  /// Normalize a folder path (handle various Android path formats)
+  String _normalizePath(String path) {
+    // Handle content:// URIs by extracting the actual path
+    if (path.startsWith('content://')) {
+      // Try to extract path from common content URI formats
+      // content://com.android.externalstorage.documents/tree/primary:Music
+      final match = RegExp(r'primary[:%](.+)$').firstMatch(path);
+      if (match != null) {
+        final relativePath = Uri.decodeComponent(match.group(1)!);
+        return '/storage/emulated/0/$relativePath';
+      }
+      print('Could not parse content URI: $path');
+      return path;
+    }
+    
+    // Handle /tree/ or /document/ paths
+    if (path.contains('/tree/') || path.contains('/document/')) {
+      final match = RegExp(r'primary[:%](.+)$').firstMatch(path);
+      if (match != null) {
+        final relativePath = Uri.decodeComponent(match.group(1)!);
+        return '/storage/emulated/0/$relativePath';
+      }
+    }
+    
+    return path;
+  }
+
   /// Get all audio files from a directory recursively
   Future<List<File>> _getAudioFiles(List<String> folderPaths) async {
     final audioFiles = <File>[];
     
-    for (final folderPath in folderPaths) {
-      final folder = Directory(folderPath);
-      if (!await folder.exists()) continue;
+    for (final originalPath in folderPaths) {
+      final folderPath = _normalizePath(originalPath);
+      print('Scanning folder: $folderPath (original: $originalPath)');
       
-      try {
-        await for (final entity in folder.list(recursive: true, followLinks: false)) {
-          if (entity is File && _isAudioFile(entity.path)) {
-            audioFiles.add(entity);
+      final folder = Directory(folderPath);
+      if (!await folder.exists()) {
+        print('Folder does not exist: $folderPath');
+        
+        // Try alternative path formats
+        final alternativePaths = _getAlternativePaths(originalPath);
+        bool found = false;
+        for (final altPath in alternativePaths) {
+          final altFolder = Directory(altPath);
+          if (await altFolder.exists()) {
+            print('Found alternative path: $altPath');
+            await _scanDirectory(altFolder, audioFiles);
+            found = true;
+            break;
           }
         }
-      } catch (e) {
-        print('Error scanning folder $folderPath: $e');
+        if (!found) {
+          print('Could not find accessible path for: $originalPath');
+        }
+        continue;
       }
+      
+      await _scanDirectory(folder, audioFiles);
     }
     
+    print('Total audio files found: ${audioFiles.length}');
+    
     return audioFiles;
+  }
+
+  /// Get alternative path formats to try
+  List<String> _getAlternativePaths(String path) {
+    final alternatives = <String>[];
+    
+    // Extract folder name from path
+    final segments = path.split(RegExp(r'[/\\]'));
+    final folderName = segments.isNotEmpty ? segments.last : '';
+    
+    if (folderName.isNotEmpty) {
+      // Try common Android storage locations
+      alternatives.addAll([
+        '/storage/emulated/0/$folderName',
+        '/storage/emulated/0/Music/$folderName',
+        '/storage/emulated/0/Download/$folderName',
+        '/sdcard/$folderName',
+        '/sdcard/Music/$folderName',
+      ]);
+    }
+    
+    return alternatives;
+  }
+
+  /// Scan a directory for audio files
+  Future<void> _scanDirectory(Directory folder, List<File> audioFiles) async {
+    try {
+      await for (final entity in folder.list(recursive: true, followLinks: false)) {
+        if (entity is File && _isAudioFile(entity.path)) {
+          audioFiles.add(entity);
+          print('Found audio file: ${entity.path}');
+        }
+      }
+    } catch (e) {
+      print('Error scanning folder ${folder.path}: $e');
+    }
   }
 
   /// Get common music directories on the device

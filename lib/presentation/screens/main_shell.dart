@@ -80,8 +80,7 @@ class _MainShellState extends ConsumerState<MainShell> {
   }
 
   Widget _buildFloatingNavBar(BuildContext context) {
-    // Pure glass effect - fully transparent with strong blur only
-    // Like looking through thick clear glass
+    // Pure glass effect - smooth blur without sharp edges
     const iconColor = Colors.white;
     final inactiveIconColor = Colors.white.withOpacity(0.5);
 
@@ -91,14 +90,13 @@ class _MainShellState extends ConsumerState<MainShell> {
         padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
         child: Row(
           children: [
-            // Main navigation pill (Home, New, Radio, Library)
+            // Main navigation pill (Home, Library)
             Expanded(
               child: EdgeBlurContainer(
                 height: 70,
-                borderRadius: 18,
-                blur: 15,
-                backgroundColor: Colors.white.withOpacity(0.02),
-                borderColor: Colors.white.withOpacity(0.1),
+                borderRadius: 22,
+                blur: 25,
+                backgroundColor: Colors.white.withOpacity(0.06),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
@@ -111,27 +109,9 @@ class _MainShellState extends ConsumerState<MainShell> {
                       inactiveColor: inactiveIconColor,
                     ),
                     _buildNavItem(
-                      icon: Icons.grid_view_rounded,
-                      label: 'New',
-                      index: 1,
-                      route: '/browse',
-                      isDisabled: true,
-                      iconColor: iconColor,
-                      inactiveColor: inactiveIconColor,
-                    ),
-                    _buildNavItem(
-                      icon: Icons.sensors_rounded,
-                      label: 'Radio',
-                      index: 2,
-                      route: '/radio',
-                      isDisabled: true,
-                      iconColor: iconColor,
-                      inactiveColor: inactiveIconColor,
-                    ),
-                    _buildNavItem(
                       icon: Icons.library_music_rounded,
                       label: 'Library',
-                      index: 3,
+                      index: 1,
                       route: '/library',
                       iconColor: iconColor,
                       inactiveColor: inactiveIconColor,
@@ -153,21 +133,20 @@ class _MainShellState extends ConsumerState<MainShell> {
     BuildContext context,
     Color iconColor,
   ) {
-    final isActive = _currentIndex == 4;
+    final isActive = _currentIndex == 2;
 
     return GestureDetector(
       onTap: () {
         HapticFeedback.lightImpact();
-        setState(() => _currentIndex = 4);
+        setState(() => _currentIndex = 2);
         context.go('/search');
       },
       child: EdgeBlurContainer(
         height: 70,
         width: 70,
-        borderRadius: 18,
-        blur: 15,
-        backgroundColor: Colors.white.withOpacity(0.02),
-        borderColor: Colors.white.withOpacity(0.1),
+        borderRadius: 22,
+        blur: 25,
+        backgroundColor: Colors.white.withOpacity(0.06),
         child: Icon(
           Icons.search_rounded,
           color: isActive ? AppColors.primary : iconColor,

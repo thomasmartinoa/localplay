@@ -124,78 +124,36 @@ class EdgeBlurContainer extends StatelessWidget {
         width: width,
         child: Stack(
           children: [
-            // Main blur layer
+            // Main blur layer - uniform glass effect
             Positioned.fill(
               child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
-                child: Container(color: Colors.transparent),
-              ),
-            ),
-            // Extra blur on left edge
-            Positioned(
-              left: 0,
-              top: 0,
-              bottom: 0,
-              width: 40,
-              child: ClipRRect(
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(borderRadius),
-                  bottomLeft: Radius.circular(borderRadius),
-                ),
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: blur * 1.5, sigmaY: blur * 1.5),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.centerLeft,
-                        end: Alignment.centerRight,
-                        colors: [
-                          Colors.white.withOpacity(0.03),
-                          Colors.transparent,
-                        ],
-                      ),
+                child: Container(
+                  decoration: BoxDecoration(
+                    // Subtle gradient overlay for depth
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.white.withOpacity(0.08),
+                        Colors.white.withOpacity(0.02),
+                      ],
                     ),
+                    borderRadius: BorderRadius.circular(borderRadius),
                   ),
                 ),
               ),
             ),
-            // Extra blur on right edge
-            Positioned(
-              right: 0,
-              top: 0,
-              bottom: 0,
-              width: 40,
-              child: ClipRRect(
-                borderRadius: BorderRadius.only(
-                  topRight: Radius.circular(borderRadius),
-                  bottomRight: Radius.circular(borderRadius),
-                ),
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: blur * 1.5, sigmaY: blur * 1.5),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.centerRight,
-                        end: Alignment.centerLeft,
-                        colors: [
-                          Colors.white.withOpacity(0.03),
-                          Colors.transparent,
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            // Glass container with border
+            // Content layer
             Container(
               height: height,
               width: width,
               decoration: BoxDecoration(
                 color: backgroundColor,
                 borderRadius: BorderRadius.circular(borderRadius),
+                // Very subtle inner shadow effect using gradient border
                 border: Border.all(
-                  color: borderColor,
+                  color: Colors.white.withOpacity(0.08),
                   width: 0.5,
                 ),
               ),

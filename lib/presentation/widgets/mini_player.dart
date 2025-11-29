@@ -37,10 +37,9 @@ class MiniPlayer extends ConsumerWidget {
           },
           child: EdgeBlurContainer(
             height: 64,
-            borderRadius: 18,
-            blur: 15,
-            backgroundColor: Colors.white.withOpacity(0.02),
-            borderColor: Colors.white.withOpacity(0.1),
+            borderRadius: 22,
+            blur: 25,
+            backgroundColor: Colors.white.withOpacity(0.06),
             child: Stack(
               children: [
                 // Progress indicator at bottom

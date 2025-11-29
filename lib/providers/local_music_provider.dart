@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:file_picker/file_picker.dart';
@@ -251,11 +252,61 @@ class ScanFoldersNotifier extends StateNotifier<List<ScanFolder>> {
       state.where((f) => f.isEnabled).map((f) => f.path).toList();
 }
 
+/// Normalize folder path for Android storage access
+String _normalizeFolderPath(String path) {
+  // Handle content:// URIs
+  if (path.startsWith('content://')) {
+    // Try to extract path from content URI
+    // Format: content://com.android.externalstorage.documents/tree/primary:Music
+    final match = RegExp(r'primary[:%](.+)$').firstMatch(path);
+    if (match != null) {
+      final relativePath = Uri.decodeComponent(match.group(1)!);
+      return '/storage/emulated/0/$relativePath';
+    }
+  }
+  
+  // Handle /tree/ or /document/ paths
+  if (path.contains('/tree/') || path.contains('/document/')) {
+    final match = RegExp(r'primary[:%](.+)$').firstMatch(path);
+    if (match != null) {
+      final relativePath = Uri.decodeComponent(match.group(1)!);
+      return '/storage/emulated/0/$relativePath';
+    }
+  }
+  
+  return path;
+}
+
 /// Pick folder action provider
 final pickFolderProvider = Provider<Future<String?> Function()>((ref) {
   return () async {
     try {
       final result = await FilePicker.platform.getDirectoryPath();
+      print('Raw picked folder path: $result');
+      
+      if (result != null) {
+        // Normalize the path for Android
+        String normalizedPath = result;
+        if (Platform.isAndroid) {
+          normalizedPath = _normalizeFolderPath(result);
+          print('Normalized path: $normalizedPath');
+        }
+        
+        // Verify the directory exists
+        final dir = Directory(normalizedPath);
+        final exists = await dir.exists();
+        print('Directory exists: $exists');
+        
+        if (!exists) {
+          print('Warning: Selected directory does not exist or is not accessible');
+          print('Trying to list files in: $normalizedPath');
+          
+          // Still return the normalized path - the scanner will try alternative paths
+        }
+        
+        return normalizedPath;
+      }
+      
       return result;
     } catch (e) {
       print('Error picking folder: $e');
@@ -272,20 +323,29 @@ final scanMusicActionProvider = Provider<Future<void> Function({bool useSelected
     
     ScanResult result;
     
-    if (useSelectedFolders && folders.isNotEmpty) {
+    if (useSelectedFolders) {
+      // Get only enabled folder paths
       final enabledPaths = folders
           .where((f) => f.isEnabled)
           .map((f) => f.path)
           .toList();
       
+      print('Scanning selected folders: $enabledPaths');
+      print('Total folders: ${folders.length}, Enabled: ${enabledPaths.length}');
+      
       if (enabledPaths.isEmpty) {
-        result = await scanner.scanAllMusic();
+        print('No enabled folders found, returning empty result');
+        // Don't scan all music, just return empty if no folders selected
+        result = const ScanResult(songs: [], albums: [], artists: []);
       } else {
         result = await scanner.scanFolders(enabledPaths);
       }
     } else {
+      print('Scanning all music on device');
       result = await scanner.scanAllMusic();
     }
+    
+    print('Scan complete: ${result.songs.length} songs, ${result.albums.length} albums, ${result.artists.length} artists');
     
     // Save results
     await ref.read(localSongsProvider.notifier).setSongs(result.songs);

@@ -411,6 +411,16 @@ class SettingsScreen extends ConsumerWidget {
     final path = await pickFolder();
     
     if (path != null) {
+      // Check if directory is accessible
+      final dir = Directory(path);
+      final exists = await dir.exists();
+      
+      // Even if the directory check fails, we'll add it and let the scanner try
+      // The scanner has fallback logic for alternative paths
+      if (!exists) {
+        print('Directory not directly accessible, but will add anyway: $path');
+      }
+      
       final name = path.split(Platform.pathSeparator).last;
       final folder = ScanFolder(
         path: path,
@@ -418,6 +428,20 @@ class SettingsScreen extends ConsumerWidget {
         addedAt: DateTime.now(),
       );
       await ref.read(scanFoldersProvider.notifier).addFolder(folder);
+      
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Added folder: $name'),
+            backgroundColor: AppColors.primary,
+            action: SnackBarAction(
+              label: 'Scan Now',
+              textColor: Colors.white,
+              onPressed: () => _startScan(ref, useSelectedFolders: true),
+            ),
+          ),
+        );
+      }
     }
   }
 

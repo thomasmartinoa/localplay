@@ -318,6 +318,9 @@ class LibraryScreen extends ConsumerWidget {
   }
 
   Widget _buildEmptyState(BuildContext context, WidgetRef ref) {
+    final scanFolders = ref.watch(scanFoldersProvider);
+    final hasSelectedFolders = scanFolders.isNotEmpty;
+    
     return Padding(
       padding: const EdgeInsets.all(32),
       child: Column(
@@ -339,33 +342,68 @@ class LibraryScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 24),
           Text(
-            'No Music Yet',
+            hasSelectedFolders ? 'Ready to Scan' : 'No Music Yet',
             style: AppTextStyles.title2.copyWith(
               color: AppColors.textPrimaryDark,
             ),
           ),
           const SizedBox(height: 12),
           Text(
-            'Scan your device to find and play\nyour local music collection',
+            hasSelectedFolders 
+                ? 'You have ${scanFolders.length} folder(s) selected.\nTap below to scan for music.'
+                : 'Scan your device to find and play\nyour local music collection',
             textAlign: TextAlign.center,
             style: AppTextStyles.body.copyWith(
               color: AppColors.textSecondaryDark,
             ),
           ),
           const SizedBox(height: 32),
-          ElevatedButton.icon(
-            onPressed: () => _startQuickScan(ref),
-            icon: const Icon(Iconsax.scan),
-            label: const Text('Scan All Music'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+          
+          // Show different buttons based on whether folders are selected
+          if (hasSelectedFolders) ...[
+            ElevatedButton.icon(
+              onPressed: () => _startSelectedFoldersScan(ref),
+              icon: const Icon(Iconsax.folder_2),
+              label: const Text('Scan Selected Folders'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
             ),
-          ),
+            const SizedBox(height: 12),
+            OutlinedButton.icon(
+              onPressed: () => _startQuickScan(ref),
+              icon: const Icon(Iconsax.scan),
+              label: const Text('Scan All Device Music'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppColors.primary,
+                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                side: const BorderSide(color: AppColors.primary),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ] else ...[
+            ElevatedButton.icon(
+              onPressed: () => _startQuickScan(ref),
+              icon: const Icon(Iconsax.scan),
+              label: const Text('Scan All Music'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ],
+          
           const SizedBox(height: 16),
           TextButton.icon(
             onPressed: () => context.push('/settings'),
@@ -465,6 +503,11 @@ class LibraryScreen extends ConsumerWidget {
   Future<void> _startQuickScan(WidgetRef ref) async {
     final scanAction = ref.read(scanMusicActionProvider);
     await scanAction(useSelectedFolders: false);
+  }
+
+  Future<void> _startSelectedFoldersScan(WidgetRef ref) async {
+    final scanAction = ref.read(scanMusicActionProvider);
+    await scanAction(useSelectedFolders: true);
   }
 
   void _playSong(WidgetRef ref, dynamic song, List<dynamic> queue) {
