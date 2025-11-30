@@ -376,7 +376,7 @@ class LibraryScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 12),
             OutlinedButton.icon(
-              onPressed: () => _startQuickScan(ref),
+              onPressed: () => _showFullScanConfirmation(context, ref),
               icon: const Icon(Iconsax.scan),
               label: const Text('Scan All Device Music'),
               style: OutlinedButton.styleFrom(
@@ -390,7 +390,7 @@ class LibraryScreen extends ConsumerWidget {
             ),
           ] else ...[
             ElevatedButton.icon(
-              onPressed: () => _startQuickScan(ref),
+              onPressed: () => _showFullScanConfirmation(context, ref),
               icon: const Icon(Iconsax.scan),
               label: const Text('Scan All Music'),
               style: ElevatedButton.styleFrom(
@@ -508,6 +508,100 @@ class LibraryScreen extends ConsumerWidget {
   Future<void> _startSelectedFoldersScan(WidgetRef ref) async {
     final scanAction = ref.read(scanMusicActionProvider);
     await scanAction(useSelectedFolders: true);
+  }
+
+  /// Show confirmation dialog before scanning entire device
+  void _showFullScanConfirmation(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppColors.surfaceDark,
+        title: Row(
+          children: [
+            const Icon(Iconsax.warning_2, color: Colors.amber, size: 28),
+            const SizedBox(width: 12),
+            Text(
+              'Scan Entire Device',
+              style: AppTextStyles.title3.copyWith(color: AppColors.textPrimaryDark),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'This will scan ALL audio files on your device, including:',
+              style: AppTextStyles.body.copyWith(color: AppColors.textSecondaryDark),
+            ),
+            const SizedBox(height: 12),
+            _buildBulletPoint('Ringtones & notifications'),
+            _buildBulletPoint('Downloaded audio files'),
+            _buildBulletPoint('App recordings & voice memos'),
+            _buildBulletPoint('System sounds'),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Iconsax.info_circle, color: AppColors.primary, size: 20),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'For a cleaner library, use "Select Folders" to pick specific music folders.',
+                      style: AppTextStyles.caption1.copyWith(color: AppColors.primary),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(dialogContext);
+              _startQuickScan(ref);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Scan All'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBulletPoint(String text) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 8, bottom: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '• ',
+            style: AppTextStyles.body.copyWith(color: AppColors.textSecondaryDark),
+          ),
+          Expanded(
+            child: Text(
+              text,
+              style: AppTextStyles.body.copyWith(color: AppColors.textSecondaryDark),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   void _playSong(WidgetRef ref, dynamic song, List<dynamic> queue) {

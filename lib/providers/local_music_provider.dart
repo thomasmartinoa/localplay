@@ -88,6 +88,53 @@ class LocalSongsNotifier extends StateNotifier<List<Song>> {
     }
   }
 
+  /// Remove all songs from a specific folder path
+  Future<void> removeSongsFromFolder(String folderPath) async {
+    try {
+      _songsBox ??= await Hive.openBox<Song>(HiveBoxes.songs);
+      
+      // Normalize the folder path for comparison
+      final normalizedFolder = folderPath.replaceAll('\\', '/');
+      
+      // Find songs that belong to this folder
+      final songsToRemove = state.where((song) {
+        if (song.filePath == null) return false;
+        final normalizedSongPath = song.filePath!.replaceAll('\\', '/');
+        return normalizedSongPath.startsWith(normalizedFolder);
+      }).toList();
+      
+      print('Removing ${songsToRemove.length} songs from folder: $folderPath');
+      
+      // Remove from Hive
+      for (final song in songsToRemove) {
+        await _songsBox!.delete(song.id);
+      }
+      
+      // Update state
+      state = state.where((song) {
+        if (song.filePath == null) return true;
+        final normalizedSongPath = song.filePath!.replaceAll('\\', '/');
+        return !normalizedSongPath.startsWith(normalizedFolder);
+      }).toList();
+    } catch (e) {
+      print('Error removing songs from folder: $e');
+    }
+  }
+
+  /// Get songs from specific folder paths only
+  List<Song> getSongsFromFolders(List<String> folderPaths) {
+    if (folderPaths.isEmpty) return [];
+    
+    return state.where((song) {
+      if (song.filePath == null) return false;
+      final normalizedSongPath = song.filePath!.replaceAll('\\', '/');
+      return folderPaths.any((folderPath) {
+        final normalizedFolder = folderPath.replaceAll('\\', '/');
+        return normalizedSongPath.startsWith(normalizedFolder);
+      });
+    }).toList();
+  }
+
   List<Song> searchSongs(String query) {
     if (query.isEmpty) return state;
     final lowerQuery = query.toLowerCase();
@@ -248,6 +295,12 @@ class ScanFoldersNotifier extends StateNotifier<List<ScanFolder>> {
     }
   }
 
+  /// Check if folder is enabled
+  bool isFolderEnabled(String path) {
+    final folder = state.firstWhere((f) => f.path == path, orElse: () => ScanFolder(path: '', name: '', addedAt: DateTime.now(), isEnabled: false));
+    return folder.isEnabled;
+  }
+
   List<String> get enabledFolderPaths => 
       state.where((f) => f.isEnabled).map((f) => f.path).toList();
 }
@@ -351,6 +404,80 @@ final scanMusicActionProvider = Provider<Future<void> Function({bool useSelected
     await ref.read(localSongsProvider.notifier).setSongs(result.songs);
     await ref.read(localAlbumsProvider.notifier).setAlbums(result.albums);
     await ref.read(localArtistsProvider.notifier).setArtists(result.artists);
+  };
+});
+
+/// Scan a single folder and add to existing library
+final scanSingleFolderProvider = Provider<Future<void> Function(String folderPath)>((ref) {
+  return (String folderPath) async {
+    final scanner = ref.read(localMusicScannerProvider);
+    
+    print('Scanning single folder: $folderPath');
+    
+    final result = await scanner.scanFolders([folderPath]);
+    
+    print('Single folder scan complete: ${result.songs.length} songs');
+    
+    if (result.songs.isNotEmpty) {
+      // Add songs to existing library (not replace)
+      await ref.read(localSongsProvider.notifier).addSongs(result.songs);
+      
+      // For albums and artists, we need to merge with existing
+      final existingAlbums = ref.read(localAlbumsProvider);
+      final existingArtists = ref.read(localArtistsProvider);
+      
+      // Add new albums that don't exist
+      final newAlbums = result.albums.where((a) => 
+        !existingAlbums.any((ea) => ea.id == a.id)
+      ).toList();
+      
+      // Add new artists that don't exist
+      final newArtists = result.artists.where((a) => 
+        !existingArtists.any((ea) => ea.id == a.id)
+      ).toList();
+      
+      if (newAlbums.isNotEmpty) {
+        await ref.read(localAlbumsProvider.notifier).setAlbums([...existingAlbums, ...newAlbums]);
+      }
+      if (newArtists.isNotEmpty) {
+        await ref.read(localArtistsProvider.notifier).setArtists([...existingArtists, ...newArtists]);
+      }
+    }
+  };
+});
+
+/// Remove songs from a folder when folder is deleted or disabled
+final removeFolderSongsProvider = Provider<Future<void> Function(String folderPath)>((ref) {
+  return (String folderPath) async {
+    print('Removing songs from folder: $folderPath');
+    await ref.read(localSongsProvider.notifier).removeSongsFromFolder(folderPath);
+    
+    // Rebuild albums and artists based on remaining songs
+    final remainingSongs = ref.read(localSongsProvider);
+    
+    // Get unique album IDs from remaining songs
+    final remainingAlbumIds = remainingSongs
+        .where((s) => s.albumId != null)
+        .map((s) => s.albumId!)
+        .toSet();
+    
+    // Get unique artist IDs from remaining songs
+    final remainingArtistIds = remainingSongs
+        .where((s) => s.artistId != null)
+        .map((s) => s.artistId!)
+        .toSet();
+    
+    // Filter albums to only keep those with songs
+    final currentAlbums = ref.read(localAlbumsProvider);
+    final filteredAlbums = currentAlbums.where((a) => remainingAlbumIds.contains(a.id)).toList();
+    await ref.read(localAlbumsProvider.notifier).setAlbums(filteredAlbums);
+    
+    // Filter artists to only keep those with songs
+    final currentArtists = ref.read(localArtistsProvider);
+    final filteredArtists = currentArtists.where((a) => remainingArtistIds.contains(a.id)).toList();
+    await ref.read(localArtistsProvider.notifier).setArtists(filteredArtists);
+    
+    print('Cleanup complete. Remaining: ${remainingSongs.length} songs, ${filteredAlbums.length} albums, ${filteredArtists.length} artists');
   };
 });
 

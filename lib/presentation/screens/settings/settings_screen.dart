@@ -325,7 +325,7 @@ class SettingsScreen extends ConsumerWidget {
           children: [
             Switch(
               value: folder.isEnabled,
-              onChanged: (_) => ref.read(scanFoldersProvider.notifier).toggleFolder(folder.path),
+              onChanged: (_) => _toggleFolder(context, ref, folder),
               activeThumbColor: AppColors.primary,
             ),
             IconButton(
@@ -362,7 +362,7 @@ class SettingsScreen extends ConsumerWidget {
         
         // Scan All Music
         OutlinedButton.icon(
-          onPressed: () => _startScan(ref, useSelectedFolders: false),
+          onPressed: () => _showFullScanConfirmation(context, ref),
           icon: const Icon(Iconsax.music),
           label: const Text('Scan All Device Music'),
           style: OutlinedButton.styleFrom(
@@ -432,13 +432,23 @@ class SettingsScreen extends ConsumerWidget {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Added folder: $name'),
+            content: Text('Scanning folder: $name...'),
             backgroundColor: AppColors.primary,
-            action: SnackBarAction(
-              label: 'Scan Now',
-              textColor: Colors.white,
-              onPressed: () => _startScan(ref, useSelectedFolders: true),
-            ),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+      
+      // Auto-scan the newly added folder
+      final scanFolder = ref.read(scanSingleFolderProvider);
+      await scanFolder(path);
+      
+      if (context.mounted) {
+        final songCount = ref.read(localSongsProvider).length;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Scan complete! Library now has $songCount songs'),
+            backgroundColor: Colors.green,
           ),
         );
       }
@@ -460,7 +470,7 @@ class SettingsScreen extends ConsumerWidget {
           style: AppTextStyles.title3.copyWith(color: AppColors.textPrimaryDark),
         ),
         content: Text(
-          'Remove "${folder.name}" from scan folders?',
+          'Remove "${folder.name}" from scan folders?\n\nThis will also remove all songs from this folder from your library.',
           style: AppTextStyles.body.copyWith(color: AppColors.textSecondaryDark),
         ),
         actions: [
@@ -469,11 +479,167 @@ class SettingsScreen extends ConsumerWidget {
             child: const Text('Cancel'),
           ),
           TextButton(
-            onPressed: () {
-              ref.read(scanFoldersProvider.notifier).removeFolder(folder.path);
+            onPressed: () async {
               Navigator.pop(context);
+              
+              // Remove songs from this folder
+              final removeSongs = ref.read(removeFolderSongsProvider);
+              await removeSongs(folder.path);
+              
+              // Remove the folder
+              await ref.read(scanFoldersProvider.notifier).removeFolder(folder.path);
+              
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Removed folder: ${folder.name}'),
+                    backgroundColor: AppColors.primary,
+                  ),
+                );
+              }
             },
             child: const Text('Remove', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Toggle folder enabled/disabled and update songs accordingly
+  Future<void> _toggleFolder(BuildContext context, WidgetRef ref, ScanFolder folder) async {
+    final wasEnabled = folder.isEnabled;
+    
+    // Toggle the folder
+    await ref.read(scanFoldersProvider.notifier).toggleFolder(folder.path);
+    
+    if (wasEnabled) {
+      // Folder was enabled, now disabled - remove songs from this folder
+      final removeSongs = ref.read(removeFolderSongsProvider);
+      await removeSongs(folder.path);
+      
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Disabled folder: ${folder.name}. Songs removed from library.'),
+            backgroundColor: AppColors.primary,
+          ),
+        );
+      }
+    } else {
+      // Folder was disabled, now enabled - scan and add songs
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Scanning folder: ${folder.name}...'),
+            backgroundColor: AppColors.primary,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+      
+      final scanFolder = ref.read(scanSingleFolderProvider);
+      await scanFolder(folder.path);
+      
+      if (context.mounted) {
+        final songCount = ref.read(localSongsProvider).length;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Scan complete! Library now has $songCount songs'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    }
+  }
+
+  /// Show confirmation dialog before scanning entire device
+  void _showFullScanConfirmation(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.surfaceDark,
+        title: Row(
+          children: [
+            const Icon(Iconsax.warning_2, color: Colors.amber, size: 28),
+            const SizedBox(width: 12),
+            Text(
+              'Scan Entire Device',
+              style: AppTextStyles.title3.copyWith(color: AppColors.textPrimaryDark),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'This will scan ALL audio files on your device, including:',
+              style: AppTextStyles.body.copyWith(color: AppColors.textSecondaryDark),
+            ),
+            const SizedBox(height: 12),
+            _buildBulletPoint('Ringtones & notifications'),
+            _buildBulletPoint('Downloaded audio files'),
+            _buildBulletPoint('App recordings & voice memos'),
+            _buildBulletPoint('System sounds'),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Iconsax.info_circle, color: AppColors.primary, size: 20),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'For a cleaner library, use "Add Music Folder" to select specific folders.',
+                      style: AppTextStyles.caption1.copyWith(color: AppColors.primary),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _startScan(ref, useSelectedFolders: false);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Scan All'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBulletPoint(String text) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 8, bottom: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '• ',
+            style: AppTextStyles.body.copyWith(color: AppColors.textSecondaryDark),
+          ),
+          Expanded(
+            child: Text(
+              text,
+              style: AppTextStyles.body.copyWith(color: AppColors.textSecondaryDark),
+            ),
           ),
         ],
       ),
