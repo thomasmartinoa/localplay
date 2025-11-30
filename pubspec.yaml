@@ -29,6 +29,7 @@ dependencies:
   shimmer: ^3.0.0
   palette_generator: ^0.3.3+4
   marquee: ^2.2.3
+  liquid_glass_renderer: ^0.2.0-dev.4
 
   # Local Storage
   hive_flutter: ^1.1.0
