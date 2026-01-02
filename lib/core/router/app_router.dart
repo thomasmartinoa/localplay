@@ -13,6 +13,7 @@ import '../../presentation/screens/player/now_playing_screen.dart';
 import '../../presentation/screens/album/album_screen.dart';
 import '../../presentation/screens/playlist/playlist_screen.dart';
 import '../../presentation/screens/artist/artist_screen.dart';
+import '../../presentation/screens/genre/genre_screen.dart';
 import '../../presentation/screens/settings/settings_screen.dart';
 import '../../domain/entities/entities.dart';
 
@@ -142,6 +143,18 @@ final appRouter = GoRouter(
       path: '/favorites',
       name: 'favorites',
       builder: (context, state) => const FavoritesScreen(),
+    ),
+    // Genre detail
+    GoRoute(
+      path: '/genre/:name',
+      name: 'genre',
+      builder: (context, state) {
+        final genreColor = state.extra as Color?;
+        return GenreScreen(
+          genreName: Uri.decodeComponent(state.pathParameters['name']!),
+          genreColor: genreColor,
+        );
+      },
     ),
   ],
 );

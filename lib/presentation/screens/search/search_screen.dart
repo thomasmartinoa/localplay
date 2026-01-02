@@ -37,6 +37,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     final recentlyAdded = ref.watch(recentlyAddedSongsProvider);
     final favorites = ref.watch(favoriteSongsProvider);
     final libraryStats = ref.watch(libraryStatsProvider);
+    final genres = ref.watch(genresWithCountProvider);
     final statusBarHeight = MediaQuery.of(context).padding.top;
 
     return Scaffold(
@@ -197,6 +198,110 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                 ]),
               ),
             ),
+
+            // Genres Section
+            if (genres.isNotEmpty) ...[
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 24, 20, 12),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Genres',
+                        style: TextStyle(
+                          color: AppColors.textPrimaryDark,
+                          fontSize: 22,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: -0.3,
+                        ),
+                      ),
+                      if (genres.length > 8)
+                        GestureDetector(
+                          onTap: () => context.push('/all-genres'),
+                          child: const Text(
+                            'See All',
+                            style: TextStyle(
+                              color: AppColors.primary,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: SizedBox(
+                  height: 40,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: genres.take(10).length,
+                    itemBuilder: (context, index) {
+                      final genre = genres[index];
+                      final genreColor = _getGenreColor(genre.name);
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: GestureDetector(
+                          onTap: () => context.push(
+                            '/genre/${Uri.encodeComponent(genre.name)}',
+                            extra: genreColor,
+                          ),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  genreColor.withOpacity(0.3),
+                                  genreColor.withOpacity(0.15),
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: genreColor.withOpacity(0.4),
+                                width: 1,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  _getGenreIcon(genre.name),
+                                  color: genreColor,
+                                  size: 16,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  genre.name,
+                                  style: const TextStyle(
+                                    color: AppColors.textPrimaryDark,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  '${genre.songCount}',
+                                  style: TextStyle(
+                                    color: AppColors.textSecondaryDark.withOpacity(0.7),
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ],
 
             // Search history
             if (searchHistory.isNotEmpty) ...[
@@ -742,5 +847,69 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         size: 24,
       ),
     );
+  }
+
+  /// Get color for genre based on name
+  Color _getGenreColor(String genre) {
+    final lowerGenre = genre.toLowerCase();
+    
+    if (lowerGenre.contains('rock') || lowerGenre.contains('metal')) {
+      return AppColors.primary;
+    } else if (lowerGenre.contains('pop')) {
+      return AppColors.accentPink;
+    } else if (lowerGenre.contains('hip') || lowerGenre.contains('rap')) {
+      return AppColors.accentOrange;
+    } else if (lowerGenre.contains('jazz') || lowerGenre.contains('blues')) {
+      return AppColors.accentBlue;
+    } else if (lowerGenre.contains('classical') || lowerGenre.contains('orchestra')) {
+      return AppColors.accentPurple;
+    } else if (lowerGenre.contains('electronic') || lowerGenre.contains('edm') || lowerGenre.contains('house') || lowerGenre.contains('techno')) {
+      return AppColors.accentTeal;
+    } else if (lowerGenre.contains('country') || lowerGenre.contains('folk')) {
+      return AppColors.accentGreen;
+    } else if (lowerGenre.contains('r&b') || lowerGenre.contains('soul')) {
+      return AppColors.accentPink;
+    } else if (lowerGenre.contains('indie') || lowerGenre.contains('alternative')) {
+      return AppColors.accentTeal;
+    } else if (lowerGenre.contains('reggae')) {
+      return AppColors.accentGreen;
+    } else if (lowerGenre.contains('latin') || lowerGenre.contains('salsa')) {
+      return AppColors.accentOrange;
+    } else {
+      // Default gradient of colors based on hash
+      final hash = genre.hashCode.abs();
+      final colors = [
+        AppColors.accentBlue,
+        AppColors.accentPink,
+        AppColors.accentPurple,
+        AppColors.accentGreen,
+        AppColors.accentOrange,
+        AppColors.accentTeal,
+      ];
+      return colors[hash % colors.length];
+    }
+  }
+
+  /// Get icon for genre based on name
+  IconData _getGenreIcon(String genre) {
+    final lowerGenre = genre.toLowerCase();
+    
+    if (lowerGenre.contains('rock') || lowerGenre.contains('metal')) {
+      return Iconsax.music;
+    } else if (lowerGenre.contains('pop')) {
+      return Iconsax.star;
+    } else if (lowerGenre.contains('hip') || lowerGenre.contains('rap')) {
+      return Iconsax.microphone;
+    } else if (lowerGenre.contains('jazz') || lowerGenre.contains('blues')) {
+      return Iconsax.music_dashboard;
+    } else if (lowerGenre.contains('classical') || lowerGenre.contains('orchestra')) {
+      return Iconsax.note;
+    } else if (lowerGenre.contains('electronic') || lowerGenre.contains('edm') || lowerGenre.contains('house')) {
+      return Iconsax.cpu;
+    } else if (lowerGenre.contains('country') || lowerGenre.contains('folk')) {
+      return Iconsax.tree;
+    } else {
+      return Iconsax.music_circle;
+    }
   }
 }

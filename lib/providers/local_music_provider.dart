@@ -532,3 +532,70 @@ final libraryStatsProvider = Provider<Map<String, int>>((ref) {
     'artists': artists.length,
   };
 });
+
+/// All unique genres from songs
+final genresProvider = Provider<List<String>>((ref) {
+  final songs = ref.watch(localSongsProvider);
+  final genres = <String>{};
+  
+  for (final song in songs) {
+    if (song.genre != null && song.genre!.isNotEmpty) {
+      // Handle multiple genres separated by common delimiters
+      final songGenres = song.genre!.split(RegExp(r'[,;/]'));
+      for (final g in songGenres) {
+        final trimmed = g.trim();
+        if (trimmed.isNotEmpty) {
+          genres.add(trimmed);
+        }
+      }
+    }
+  }
+  
+  final sortedGenres = genres.toList()..sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
+  return sortedGenres;
+});
+
+/// Songs by genre provider
+final songsByGenreProvider = Provider.family<List<Song>, String>((ref, genre) {
+  final songs = ref.watch(localSongsProvider);
+  final lowerGenre = genre.toLowerCase();
+  
+  return songs.where((song) {
+    if (song.genre == null || song.genre!.isEmpty) return false;
+    return song.genre!.toLowerCase().contains(lowerGenre);
+  }).toList()
+    ..sort((a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()));
+});
+
+/// Genre with song count
+class GenreInfo {
+  final String name;
+  final int songCount;
+  
+  const GenreInfo({required this.name, required this.songCount});
+}
+
+/// Genres with song counts
+final genresWithCountProvider = Provider<List<GenreInfo>>((ref) {
+  final songs = ref.watch(localSongsProvider);
+  final genreCounts = <String, int>{};
+  
+  for (final song in songs) {
+    if (song.genre != null && song.genre!.isNotEmpty) {
+      final songGenres = song.genre!.split(RegExp(r'[,;/]'));
+      for (final g in songGenres) {
+        final trimmed = g.trim();
+        if (trimmed.isNotEmpty) {
+          genreCounts[trimmed] = (genreCounts[trimmed] ?? 0) + 1;
+        }
+      }
+    }
+  }
+  
+  final genreInfos = genreCounts.entries
+      .map((e) => GenreInfo(name: e.key, songCount: e.value))
+      .toList()
+    ..sort((a, b) => b.songCount.compareTo(a.songCount)); // Sort by count descending
+  
+  return genreInfos;
+});
