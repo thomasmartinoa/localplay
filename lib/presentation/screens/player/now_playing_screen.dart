@@ -33,9 +33,7 @@ class NowPlayingScreen extends ConsumerWidget {
           body: Stack(
             children: [
               // Background with album art blur
-              Positioned.fill(
-                child: _buildBackgroundImage(song),
-              ),
+              Positioned.fill(child: _buildBackgroundImage(song)),
               // Gradient overlay
               Positioned.fill(
                 child: Container(
@@ -44,9 +42,9 @@ class NowPlayingScreen extends ConsumerWidget {
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: [
-                        Colors.black.withOpacity(0.3),
-                        Colors.black.withOpacity(0.7),
-                        Colors.black.withOpacity(0.95),
+                        Colors.black.withValues(alpha: 0.3),
+                        Colors.black.withValues(alpha: 0.7),
+                        Colors.black.withValues(alpha: 0.95),
                       ],
                       stops: const [0.0, 0.5, 1.0],
                     ),
@@ -66,7 +64,10 @@ class NowPlayingScreen extends ConsumerWidget {
                   children: [
                     // Header with close button
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 8,
+                      ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -80,7 +81,9 @@ class NowPlayingScreen extends ConsumerWidget {
                               Text(
                                 'PLAYING FROM',
                                 style: TextStyle(
-                                  color: AppColors.textSecondaryDark.withOpacity(0.7),
+                                  color: AppColors.textSecondaryDark.withValues(
+                                    alpha: 0.7,
+                                  ),
                                   fontSize: 10,
                                   fontWeight: FontWeight.w600,
                                   letterSpacing: 1.5,
@@ -118,13 +121,13 @@ class NowPlayingScreen extends ConsumerWidget {
                             borderRadius: BorderRadius.circular(20),
                             boxShadow: [
                               BoxShadow(
-                                color: AppColors.primary.withOpacity(0.3),
+                                color: AppColors.primary.withValues(alpha: 0.3),
                                 blurRadius: 60,
                                 spreadRadius: -10,
                                 offset: const Offset(0, 20),
                               ),
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.5),
+                                color: Colors.black.withValues(alpha: 0.5),
                                 blurRadius: 40,
                                 spreadRadius: -5,
                                 offset: const Offset(0, 25),
@@ -168,7 +171,9 @@ class NowPlayingScreen extends ConsumerWidget {
                                     Text(
                                       song.artist,
                                       style: TextStyle(
-                                        color: AppColors.primary.withOpacity(0.9),
+                                        color: AppColors.primary.withValues(
+                                          alpha: 0.9,
+                                        ),
                                         fontSize: 18,
                                         fontWeight: FontWeight.w500,
                                       ),
@@ -184,10 +189,14 @@ class NowPlayingScreen extends ConsumerWidget {
                                     ? Icons.favorite_rounded
                                     : Icons.favorite_border_rounded,
                                 onPressed: () {
-                                  ref.read(favoriteSongsProvider.notifier).toggleFavorite(song);
+                                  ref
+                                      .read(favoriteSongsProvider.notifier)
+                                      .toggleFavorite(song);
                                 },
                                 size: 48,
-                                isActive: favoriteSongs.any((s) => s.id == song.id),
+                                isActive: favoriteSongs.any(
+                                  (s) => s.id == song.id,
+                                ),
                               ),
                             ],
                           ),
@@ -235,9 +244,7 @@ class NowPlayingScreen extends ConsumerWidget {
           child: CircularProgressIndicator(color: AppColors.primary),
         ),
       ),
-      error: (error, stack) => Center(
-        child: Text('Error: $error'),
-      ),
+      error: (error, stack) => Center(child: Text('Error: $error')),
     );
   }
 
@@ -258,19 +265,16 @@ class NowPlayingScreen extends ConsumerWidget {
             end: Alignment.bottomRight,
             colors: isActive
                 ? [
-                    AppColors.primary.withOpacity(0.3),
-                    AppColors.primaryDark.withOpacity(0.2),
+                    AppColors.primary.withValues(alpha: 0.3),
+                    AppColors.primaryDark.withValues(alpha: 0.2),
                   ]
-                : [
-                    AppColors.glassOverlay,
-                    AppColors.glassOverlayLight,
-                  ],
+                : [AppColors.glassOverlay, AppColors.glassOverlayLight],
           ),
           shape: BoxShape.circle,
           border: Border.all(
             color: isActive
-                ? AppColors.primary.withOpacity(0.4)
-                : AppColors.glassHighlight.withOpacity(0.2),
+                ? AppColors.primary.withValues(alpha: 0.4)
+                : AppColors.glassHighlight.withValues(alpha: 0.2),
             width: 1,
           ),
         ),
@@ -292,9 +296,9 @@ class NowPlayingScreen extends ConsumerWidget {
             thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
             overlayShape: const RoundSliderOverlayShape(overlayRadius: 14),
             activeTrackColor: AppColors.textPrimaryDark,
-            inactiveTrackColor: AppColors.sliderInactive.withOpacity(0.4),
+            inactiveTrackColor: AppColors.sliderInactive.withValues(alpha: 0.4),
             thumbColor: AppColors.textPrimaryDark,
-            overlayColor: AppColors.textPrimaryDark.withOpacity(0.2),
+            overlayColor: AppColors.textPrimaryDark.withValues(alpha: 0.2),
           ),
           child: Slider(
             value: state.progress.clamp(0.0, 1.0),
@@ -311,7 +315,7 @@ class NowPlayingScreen extends ConsumerWidget {
               Text(
                 state.formattedPosition,
                 style: TextStyle(
-                  color: AppColors.textSecondaryDark.withOpacity(0.7),
+                  color: AppColors.textSecondaryDark.withValues(alpha: 0.7),
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
                 ),
@@ -319,7 +323,7 @@ class NowPlayingScreen extends ConsumerWidget {
               Text(
                 state.formattedRemaining,
                 style: TextStyle(
-                  color: AppColors.textSecondaryDark.withOpacity(0.7),
+                  color: AppColors.textSecondaryDark.withValues(alpha: 0.7),
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
                 ),
@@ -349,7 +353,7 @@ class NowPlayingScreen extends ConsumerWidget {
             Icons.skip_previous_rounded,
             color: state.hasPrevious
                 ? AppColors.textPrimaryDark
-                : AppColors.textSecondaryDark.withOpacity(0.4),
+                : AppColors.textSecondaryDark.withValues(alpha: 0.4),
             size: 42,
           ),
         ),
@@ -368,12 +372,12 @@ class NowPlayingScreen extends ConsumerWidget {
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.white.withOpacity(0.3),
+                  color: Colors.white.withValues(alpha: 0.3),
                   blurRadius: 20,
                   spreadRadius: -5,
                 ),
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.3),
+                  color: Colors.black.withValues(alpha: 0.3),
                   blurRadius: 20,
                   offset: const Offset(0, 10),
                   spreadRadius: -5,
@@ -394,13 +398,15 @@ class NowPlayingScreen extends ConsumerWidget {
             Icons.skip_next_rounded,
             color: state.hasNext
                 ? AppColors.textPrimaryDark
-                : AppColors.textSecondaryDark.withOpacity(0.4),
+                : AppColors.textSecondaryDark.withValues(alpha: 0.4),
             size: 42,
           ),
         ),
         // Repeat button
         _buildGlassIconButton(
-          icon: state.repeatMode == RepeatMode.one ? Iconsax.repeate_one : Iconsax.repeat,
+          icon: state.repeatMode == RepeatMode.one
+              ? Iconsax.repeate_one
+              : Iconsax.repeat,
           onPressed: () => audioService.toggleRepeat(),
           size: 44,
           isActive: state.repeatMode != RepeatMode.off,
@@ -414,7 +420,7 @@ class NowPlayingScreen extends ConsumerWidget {
       children: [
         Icon(
           Icons.volume_down_rounded,
-          color: AppColors.textSecondaryDark.withOpacity(0.6),
+          color: AppColors.textSecondaryDark.withValues(alpha: 0.6),
           size: 22,
         ),
         Expanded(
@@ -423,10 +429,14 @@ class NowPlayingScreen extends ConsumerWidget {
               trackHeight: 3,
               thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 5),
               overlayShape: const RoundSliderOverlayShape(overlayRadius: 12),
-              activeTrackColor: AppColors.textSecondaryDark.withOpacity(0.6),
-              inactiveTrackColor: AppColors.sliderInactive.withOpacity(0.3),
-              thumbColor: AppColors.textSecondaryDark.withOpacity(0.8),
-              overlayColor: AppColors.textSecondaryDark.withOpacity(0.1),
+              activeTrackColor: AppColors.textSecondaryDark.withValues(
+                alpha: 0.6,
+              ),
+              inactiveTrackColor: AppColors.sliderInactive.withValues(
+                alpha: 0.3,
+              ),
+              thumbColor: AppColors.textSecondaryDark.withValues(alpha: 0.8),
+              overlayColor: AppColors.textSecondaryDark.withValues(alpha: 0.1),
             ),
             child: Slider(
               value: state.volume,
@@ -436,7 +446,7 @@ class NowPlayingScreen extends ConsumerWidget {
         ),
         Icon(
           Icons.volume_up_rounded,
-          color: AppColors.textSecondaryDark.withOpacity(0.6),
+          color: AppColors.textSecondaryDark.withValues(alpha: 0.6),
           size: 22,
         ),
       ],
@@ -452,11 +462,7 @@ class NowPlayingScreen extends ConsumerWidget {
           onPressed: () {},
           size: 44,
         ),
-        _buildGlassIconButton(
-          icon: Iconsax.driver,
-          onPressed: () {},
-          size: 44,
-        ),
+        _buildGlassIconButton(icon: Iconsax.driver, onPressed: () {}, size: 44),
         _buildGlassIconButton(
           icon: Iconsax.music_playlist,
           onPressed: () => _showQueue(context, ref),
@@ -499,19 +505,19 @@ class NowPlayingScreen extends ConsumerWidget {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      AppColors.glassDark.withOpacity(0.6),
-                      AppColors.glassLight.withOpacity(0.4),
+                      AppColors.glassDark.withValues(alpha: 0.6),
+                      AppColors.glassLight.withValues(alpha: 0.4),
                     ],
                   ),
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: AppColors.glassBorder.withOpacity(0.3),
+                    color: AppColors.glassBorder.withValues(alpha: 0.3),
                     width: 1,
                   ),
                 ),
                 child: Icon(
                   Icons.music_off_rounded,
-                  color: AppColors.textSecondaryDark.withOpacity(0.6),
+                  color: AppColors.textSecondaryDark.withValues(alpha: 0.6),
                   size: 48,
                 ),
               ),
@@ -519,7 +525,7 @@ class NowPlayingScreen extends ConsumerWidget {
               Text(
                 'No song playing',
                 style: TextStyle(
-                  color: AppColors.textSecondaryDark.withOpacity(0.8),
+                  color: AppColors.textSecondaryDark.withValues(alpha: 0.8),
                   fontSize: 18,
                   fontWeight: FontWeight.w500,
                 ),
@@ -536,19 +542,19 @@ class NowPlayingScreen extends ConsumerWidget {
       return Image.file(
         File(song.localArtworkPath!),
         fit: BoxFit.cover,
-        color: Colors.black.withOpacity(0.5),
+        color: Colors.black.withValues(alpha: 0.5),
         colorBlendMode: BlendMode.darken,
-        errorBuilder: (context, error, stackTrace) => 
-          Container(color: AppColors.backgroundDark),
+        errorBuilder: (context, error, stackTrace) =>
+            Container(color: AppColors.backgroundDark),
       );
     } else if (song.artworkUrl != null) {
       return CachedNetworkImage(
         imageUrl: song.artworkUrl!,
         fit: BoxFit.cover,
-        color: Colors.black.withOpacity(0.5),
+        color: Colors.black.withValues(alpha: 0.5),
         colorBlendMode: BlendMode.darken,
-        errorWidget: (context, url, error) => 
-          Container(color: AppColors.backgroundDark),
+        errorWidget: (context, url, error) =>
+            Container(color: AppColors.backgroundDark),
       );
     }
     return Container(color: AppColors.backgroundDark);
@@ -559,7 +565,8 @@ class NowPlayingScreen extends ConsumerWidget {
       return Image.file(
         File(song.localArtworkPath!),
         fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) => _buildArtworkPlaceholder(),
+        errorBuilder: (context, error, stackTrace) =>
+            _buildArtworkPlaceholder(),
       );
     } else if (song.artworkUrl != null) {
       return CachedNetworkImage(
@@ -578,17 +585,14 @@ class NowPlayingScreen extends ConsumerWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            AppColors.glassDark,
-            AppColors.glassLight,
-          ],
+          colors: [AppColors.glassDark, AppColors.glassLight],
         ),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Center(
         child: Icon(
           Icons.music_note_rounded,
-          color: AppColors.textSecondaryDark.withOpacity(0.4),
+          color: AppColors.textSecondaryDark.withValues(alpha: 0.4),
           size: 80,
         ),
       ),
@@ -610,11 +614,13 @@ class NowPlayingScreen extends ConsumerWidget {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  AppColors.glassDark.withOpacity(0.95),
-                  AppColors.surfaceDark.withOpacity(0.98),
+                  AppColors.glassDark.withValues(alpha: 0.95),
+                  AppColors.surfaceDark.withValues(alpha: 0.98),
                 ],
               ),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(24),
+              ),
             ),
             child: const Text(
               'Options',
@@ -635,18 +641,20 @@ class NowPlayingScreen extends ConsumerWidget {
         builder: (context, ref, child) {
           final playerState = ref.watch(playerStateProvider);
           final audioService = ref.read(audioPlayerServiceProvider);
-          
+
           return playerState.when(
             data: (state) {
               final queue = state.queue;
               final currentIndex = state.currentIndex;
-              
+
               return DraggableScrollableSheet(
                 initialChildSize: 0.6,
                 maxChildSize: 0.9,
                 expand: false,
                 builder: (context, scrollController) => ClipRRect(
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(24),
+                  ),
                   child: BackdropFilter(
                     filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
                     child: Container(
@@ -655,14 +663,18 @@ class NowPlayingScreen extends ConsumerWidget {
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
                           colors: [
-                            AppColors.glassDark.withOpacity(0.95),
-                            AppColors.surfaceDark.withOpacity(0.98),
+                            AppColors.glassDark.withValues(alpha: 0.95),
+                            AppColors.surfaceDark.withValues(alpha: 0.98),
                           ],
                         ),
-                        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                        borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(24),
+                        ),
                         border: Border(
                           top: BorderSide(
-                            color: AppColors.glassHighlight.withOpacity(0.3),
+                            color: AppColors.glassHighlight.withValues(
+                              alpha: 0.3,
+                            ),
                             width: 1,
                           ),
                         ),
@@ -676,7 +688,9 @@ class NowPlayingScreen extends ConsumerWidget {
                               width: 40,
                               height: 4,
                               decoration: BoxDecoration(
-                                color: AppColors.glassHighlight.withOpacity(0.5),
+                                color: AppColors.glassHighlight.withValues(
+                                  alpha: 0.5,
+                                ),
                                 borderRadius: BorderRadius.circular(2),
                               ),
                             ),
@@ -717,96 +731,109 @@ class NowPlayingScreen extends ConsumerWidget {
                           const SizedBox(height: 16),
                           Expanded(
                             child: queue.isEmpty
-                              ? Center(
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(
-                                        Iconsax.music_playlist,
-                                        size: 48,
-                                        color: AppColors.textSecondaryDark.withOpacity(0.5),
-                                      ),
-                                      const SizedBox(height: 16),
-                                      Text(
-                                        'No songs in queue',
-                                        style: TextStyle(
-                                          color: AppColors.textSecondaryDark.withOpacity(0.7),
-                                          fontSize: 16,
+                                ? Center(
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Iconsax.music_playlist,
+                                          size: 48,
+                                          color: AppColors.textSecondaryDark
+                                              .withValues(alpha: 0.5),
                                         ),
-                                      ),
-                                    ],
-                                  ),
-                                )
-                              : ReorderableListView.builder(
-                                  scrollController: scrollController,
-                                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                                  itemCount: queue.length,
-                                  onReorder: (oldIndex, newIndex) {
-                                    if (newIndex > oldIndex) newIndex--;
-                                    audioService.reorderQueue(oldIndex, newIndex);
-                                  },
-                                  itemBuilder: (context, index) {
-                                    final song = queue[index];
-                                    final isPlaying = index == currentIndex;
-                                    
-                                    return ListTile(
-                                      key: ValueKey(song.id),
-                                      leading: ClipRRect(
-                                        borderRadius: BorderRadius.circular(8),
-                                        child: SizedBox(
-                                          width: 50,
-                                          height: 50,
-                                          child: _buildQueueArtwork(song),
-                                        ),
-                                      ),
-                                      title: Text(
-                                        song.title,
-                                        style: TextStyle(
-                                          color: isPlaying 
-                                            ? AppColors.primary 
-                                            : AppColors.textPrimaryDark,
-                                          fontWeight: isPlaying 
-                                            ? FontWeight.w600 
-                                            : FontWeight.w500,
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      subtitle: Text(
-                                        song.artist,
-                                        style: TextStyle(
-                                          color: AppColors.textSecondaryDark.withOpacity(0.7),
-                                          fontSize: 13,
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      trailing: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          if (isPlaying)
-                                            Icon(
-                                              Iconsax.music_play,
-                                              color: AppColors.primary,
-                                              size: 20,
-                                            ),
-                                          const SizedBox(width: 8),
-                                          ReorderableDragStartListener(
-                                            index: index,
-                                            child: Icon(
-                                              Icons.drag_handle,
-                                              color: AppColors.textSecondaryDark.withOpacity(0.5),
-                                            ),
+                                        const SizedBox(height: 16),
+                                        Text(
+                                          'No songs in queue',
+                                          style: TextStyle(
+                                            color: AppColors.textSecondaryDark
+                                                .withValues(alpha: 0.7),
+                                            fontSize: 16,
                                           ),
-                                        ],
-                                      ),
-                                      onTap: () {
-                                        audioService.skipToIndex(index);
-                                        Navigator.pop(context);
-                                      },
-                                    );
-                                  },
-                                ),
+                                        ),
+                                      ],
+                                    ),
+                                  )
+                                : ReorderableListView.builder(
+                                    scrollController: scrollController,
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                    ),
+                                    itemCount: queue.length,
+                                    onReorder: (oldIndex, newIndex) {
+                                      if (newIndex > oldIndex) newIndex--;
+                                      audioService.reorderQueue(
+                                        oldIndex,
+                                        newIndex,
+                                      );
+                                    },
+                                    itemBuilder: (context, index) {
+                                      final song = queue[index];
+                                      final isPlaying = index == currentIndex;
+
+                                      return ListTile(
+                                        key: ValueKey(song.id),
+                                        leading: ClipRRect(
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                          child: SizedBox(
+                                            width: 50,
+                                            height: 50,
+                                            child: _buildQueueArtwork(song),
+                                          ),
+                                        ),
+                                        title: Text(
+                                          song.title,
+                                          style: TextStyle(
+                                            color: isPlaying
+                                                ? AppColors.primary
+                                                : AppColors.textPrimaryDark,
+                                            fontWeight: isPlaying
+                                                ? FontWeight.w600
+                                                : FontWeight.w500,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        subtitle: Text(
+                                          song.artist,
+                                          style: TextStyle(
+                                            color: AppColors.textSecondaryDark
+                                                .withValues(alpha: 0.7),
+                                            fontSize: 13,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        trailing: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            if (isPlaying)
+                                              Icon(
+                                                Iconsax.music_play,
+                                                color: AppColors.primary,
+                                                size: 20,
+                                              ),
+                                            const SizedBox(width: 8),
+                                            ReorderableDragStartListener(
+                                              index: index,
+                                              child: Icon(
+                                                Icons.drag_handle,
+                                                color: AppColors
+                                                    .textSecondaryDark
+                                                    .withValues(alpha: 0.5),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        onTap: () {
+                                          audioService.skipToIndex(index);
+                                          Navigator.pop(context);
+                                        },
+                                      );
+                                    },
+                                  ),
                           ),
                         ],
                       ),
@@ -816,7 +843,7 @@ class NowPlayingScreen extends ConsumerWidget {
               );
             },
             loading: () => const Center(child: CircularProgressIndicator()),
-            error: (_, __) => const SizedBox.shrink(),
+            error: (error, stackTrace) => const SizedBox.shrink(),
           );
         },
       ),
@@ -828,7 +855,8 @@ class NowPlayingScreen extends ConsumerWidget {
       return Image.file(
         File(song.localArtworkPath!),
         fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) => _buildSmallArtworkPlaceholder(),
+        errorBuilder: (context, error, stackTrace) =>
+            _buildSmallArtworkPlaceholder(),
       );
     } else if (song.artworkUrl != null) {
       return CachedNetworkImage(

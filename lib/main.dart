@@ -8,11 +8,11 @@ import 'data/adapters/hive_adapters.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // Initialize Hive
   await Hive.initFlutter();
   await registerHiveAdapters();
-  
+
   // Set preferred orientations
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
@@ -29,11 +29,7 @@ void main() async {
     ),
   );
 
-  runApp(
-    const ProviderScope(
-      child: MusicApp(),
-    ),
-  );
+  runApp(const ProviderScope(child: MusicApp()));
 }
 
 /// Main application widget
@@ -45,12 +41,11 @@ class MusicApp extends StatelessWidget {
     return MaterialApp.router(
       title: 'LocalPlay',
       debugShowCheckedModeBanner: false,
-      
+
       // Theme configuration
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.dark, // Default to dark mode (Apple Music style)
-      
       // Router configuration
       routerConfig: appRouter,
     );

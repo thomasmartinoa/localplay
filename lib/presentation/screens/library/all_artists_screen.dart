@@ -18,21 +18,25 @@ enum ArtistSortOption {
 }
 
 /// Provider for artist sort option
-final artistSortOptionProvider = StateProvider<ArtistSortOption>((ref) => ArtistSortOption.name);
+final artistSortOptionProvider = StateProvider<ArtistSortOption>(
+  (ref) => ArtistSortOption.name,
+);
 
 /// Provider for sorted artists
 final sortedArtistsProvider = Provider<List<Artist>>((ref) {
   final artists = ref.watch(localArtistsProvider);
   final sortOption = ref.watch(artistSortOptionProvider);
-  
+
   final sortedArtists = List<Artist>.from(artists);
   switch (sortOption) {
     case ArtistSortOption.name:
-      sortedArtists.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+      sortedArtists.sort(
+        (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+      );
     case ArtistSortOption.albumCount:
       sortedArtists.sort((a, b) => b.albumCount.compareTo(a.albumCount));
   }
-  
+
   return sortedArtists;
 });
 
@@ -93,7 +97,7 @@ class AllArtistsScreen extends ConsumerWidget {
                   Text(
                     'Sorted by ${sortOption.label}',
                     style: AppTextStyles.caption1.copyWith(
-                      color: AppColors.textSecondaryDark.withOpacity(0.7),
+                      color: AppColors.textSecondaryDark.withValues(alpha: 0.7),
                     ),
                   ),
                 ],
@@ -116,7 +120,7 @@ class AllArtistsScreen extends ConsumerWidget {
                     Icon(
                       Iconsax.user,
                       size: 64,
-                      color: AppColors.textSecondaryDark.withOpacity(0.5),
+                      color: AppColors.textSecondaryDark.withValues(alpha: 0.5),
                     ),
                     const SizedBox(height: 16),
                     Text(
@@ -129,7 +133,9 @@ class AllArtistsScreen extends ConsumerWidget {
                     Text(
                       'Scan your device to find music',
                       style: AppTextStyles.subhead.copyWith(
-                        color: AppColors.textSecondaryDark.withOpacity(0.7),
+                        color: AppColors.textSecondaryDark.withValues(
+                          alpha: 0.7,
+                        ),
                       ),
                     ),
                   ],
@@ -138,19 +144,14 @@ class AllArtistsScreen extends ConsumerWidget {
             )
           else
             SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  final artist = artists[index];
-                  return _ArtistListItem(artist: artist);
-                },
-                childCount: artists.length,
-              ),
+              delegate: SliverChildBuilderDelegate((context, index) {
+                final artist = artists[index];
+                return _ArtistListItem(artist: artist);
+              }, childCount: artists.length),
             ),
 
           // Bottom padding for mini player
-          const SliverToBoxAdapter(
-            child: SizedBox(height: 160),
-          ),
+          const SliverToBoxAdapter(child: SizedBox(height: 160)),
         ],
       ),
     );
@@ -158,7 +159,7 @@ class AllArtistsScreen extends ConsumerWidget {
 
   void _showSortOptions(BuildContext context, WidgetRef ref) {
     final currentSort = ref.read(artistSortOptionProvider);
-    
+
     showModalBottomSheet(
       context: context,
       backgroundColor: AppColors.surfaceDark,
@@ -174,7 +175,7 @@ class AllArtistsScreen extends ConsumerWidget {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: AppColors.glassHighlight.withOpacity(0.5),
+                color: AppColors.glassHighlight.withValues(alpha: 0.5),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -186,26 +187,34 @@ class AllArtistsScreen extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 16),
-            ...ArtistSortOption.values.map((option) => ListTile(
-              leading: Icon(
-                _getSortIcon(option),
-                color: currentSort == option ? AppColors.primary : AppColors.textSecondaryDark,
-              ),
-              title: Text(
-                option.label,
-                style: TextStyle(
-                  color: currentSort == option ? AppColors.primary : AppColors.textPrimaryDark,
-                  fontWeight: currentSort == option ? FontWeight.w600 : FontWeight.normal,
+            ...ArtistSortOption.values.map(
+              (option) => ListTile(
+                leading: Icon(
+                  _getSortIcon(option),
+                  color: currentSort == option
+                      ? AppColors.primary
+                      : AppColors.textSecondaryDark,
                 ),
+                title: Text(
+                  option.label,
+                  style: TextStyle(
+                    color: currentSort == option
+                        ? AppColors.primary
+                        : AppColors.textPrimaryDark,
+                    fontWeight: currentSort == option
+                        ? FontWeight.w600
+                        : FontWeight.normal,
+                  ),
+                ),
+                trailing: currentSort == option
+                    ? const Icon(Icons.check, color: AppColors.primary)
+                    : null,
+                onTap: () {
+                  ref.read(artistSortOptionProvider.notifier).state = option;
+                  Navigator.pop(context);
+                },
               ),
-              trailing: currentSort == option
-                  ? const Icon(Icons.check, color: AppColors.primary)
-                  : null,
-              onTap: () {
-                ref.read(artistSortOptionProvider.notifier).state = option;
-                Navigator.pop(context);
-              },
-            )),
+            ),
             const SizedBox(height: 16),
           ],
         ),
@@ -241,16 +250,14 @@ class _ArtistListItem extends StatelessWidget {
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              color: AppColors.shadowDark.withOpacity(0.3),
+              color: AppColors.shadowDark.withValues(alpha: 0.3),
               blurRadius: 8,
               offset: const Offset(0, 4),
               spreadRadius: -2,
             ),
           ],
         ),
-        child: ClipOval(
-          child: _buildArtwork(),
-        ),
+        child: ClipOval(child: _buildArtwork()),
       ),
       title: Text(
         artist.name,
@@ -287,7 +294,7 @@ class _ArtistListItem extends StatelessWidget {
         );
       }
     }
-    
+
     return _buildPlaceholder();
   }
 
@@ -300,14 +307,14 @@ class _ArtistListItem extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            AppColors.primary.withOpacity(0.3),
-            AppColors.primaryDark.withOpacity(0.5),
+            AppColors.primary.withValues(alpha: 0.3),
+            AppColors.primaryDark.withValues(alpha: 0.5),
           ],
         ),
       ),
       child: Icon(
         Iconsax.user,
-        color: AppColors.textPrimaryDark.withOpacity(0.7),
+        color: AppColors.textPrimaryDark.withValues(alpha: 0.7),
         size: 28,
       ),
     );

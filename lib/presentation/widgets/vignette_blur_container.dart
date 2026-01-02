@@ -52,8 +52,8 @@ class VignetteBlurContainer extends StatelessWidget {
                         radius: 0.8,
                         colors: [
                           Colors.white,
-                          Colors.white.withOpacity(0.8),
-                          Colors.white.withOpacity(0.3),
+                          Colors.white.withValues(alpha: 0.8),
+                          Colors.white.withValues(alpha: 0.3),
                           Colors.transparent,
                         ],
                         stops: const [0.0, 0.3, 0.6, 1.0],
@@ -65,9 +65,7 @@ class VignetteBlurContainer extends StatelessWidget {
                         sigmaX: edgeBlur - centerBlur,
                         sigmaY: edgeBlur - centerBlur,
                       ),
-                      child: Container(
-                        color: Colors.transparent,
-                      ),
+                      child: Container(color: Colors.transparent),
                     ),
                   ),
                 ),
@@ -80,10 +78,7 @@ class VignetteBlurContainer extends StatelessWidget {
               decoration: BoxDecoration(
                 color: backgroundColor,
                 borderRadius: BorderRadius.circular(borderRadius),
-                border: Border.all(
-                  color: borderColor,
-                  width: 0.5,
-                ),
+                border: Border.all(color: borderColor, width: 0.5),
               ),
               child: child,
             ),
@@ -135,8 +130,8 @@ class EdgeBlurContainer extends StatelessWidget {
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: [
-                        Colors.white.withOpacity(0.08),
-                        Colors.white.withOpacity(0.02),
+                        Colors.white.withValues(alpha: 0.08),
+                        Colors.white.withValues(alpha: 0.02),
                       ],
                     ),
                     borderRadius: BorderRadius.circular(borderRadius),
@@ -153,7 +148,7 @@ class EdgeBlurContainer extends StatelessWidget {
                 borderRadius: BorderRadius.circular(borderRadius),
                 // Very subtle inner shadow effect using gradient border
                 border: Border.all(
-                  color: Colors.white.withOpacity(0.08),
+                  color: Colors.white.withValues(alpha: 0.08),
                   width: 0.5,
                 ),
               ),

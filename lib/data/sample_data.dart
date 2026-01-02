@@ -13,7 +13,8 @@ class SampleData {
       album: 'After Hours',
       albumId: 'album_1',
       artistId: 'artist_1',
-      artworkUrl: 'https://i.scdn.co/image/ab67616d0000b2738863bc11d2aa12b54f5aeb36',
+      artworkUrl:
+          'https://i.scdn.co/image/ab67616d0000b2738863bc11d2aa12b54f5aeb36',
       audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
       duration: Duration(minutes: 3, seconds: 20),
       trackNumber: 1,
@@ -28,7 +29,8 @@ class SampleData {
       album: 'Starboy',
       albumId: 'album_2',
       artistId: 'artist_1',
-      artworkUrl: 'https://i.scdn.co/image/ab67616d0000b2734718e2b124f79258be7bc452',
+      artworkUrl:
+          'https://i.scdn.co/image/ab67616d0000b2734718e2b124f79258be7bc452',
       audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',
       duration: Duration(minutes: 3, seconds: 50),
       trackNumber: 1,
@@ -43,7 +45,8 @@ class SampleData {
       album: '÷ (Divide)',
       albumId: 'album_3',
       artistId: 'artist_2',
-      artworkUrl: 'https://i.scdn.co/image/ab67616d0000b273ba5db46f4b838ef6027e6f96',
+      artworkUrl:
+          'https://i.scdn.co/image/ab67616d0000b273ba5db46f4b838ef6027e6f96',
       audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3',
       duration: Duration(minutes: 3, seconds: 53),
       trackNumber: 4,
@@ -58,7 +61,8 @@ class SampleData {
       album: 'When We All Fall Asleep, Where Do We Go?',
       albumId: 'album_4',
       artistId: 'artist_3',
-      artworkUrl: 'https://i.scdn.co/image/ab67616d0000b27350a3147b4edd7701a876c6ce',
+      artworkUrl:
+          'https://i.scdn.co/image/ab67616d0000b27350a3147b4edd7701a876c6ce',
       audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3',
       duration: Duration(minutes: 3, seconds: 14),
       trackNumber: 2,
@@ -73,7 +77,8 @@ class SampleData {
       album: 'Uptown Special',
       albumId: 'album_5',
       artistId: 'artist_4',
-      artworkUrl: 'https://i.scdn.co/image/ab67616d0000b2731c7dc94382e7d9da53f5ac20',
+      artworkUrl:
+          'https://i.scdn.co/image/ab67616d0000b2731c7dc94382e7d9da53f5ac20',
       audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3',
       duration: Duration(minutes: 4, seconds: 30),
       trackNumber: 4,
@@ -88,7 +93,8 @@ class SampleData {
       album: 'Future Nostalgia',
       albumId: 'album_6',
       artistId: 'artist_5',
-      artworkUrl: 'https://i.scdn.co/image/ab67616d0000b2734bc66095f8a70bc4e6593f4f',
+      artworkUrl:
+          'https://i.scdn.co/image/ab67616d0000b2734bc66095f8a70bc4e6593f4f',
       audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3',
       duration: Duration(minutes: 3, seconds: 23),
       trackNumber: 5,
@@ -104,7 +110,8 @@ class SampleData {
       title: 'After Hours',
       artist: 'The Weeknd',
       artistId: 'artist_1',
-      artworkUrl: 'https://i.scdn.co/image/ab67616d0000b2738863bc11d2aa12b54f5aeb36',
+      artworkUrl:
+          'https://i.scdn.co/image/ab67616d0000b2738863bc11d2aa12b54f5aeb36',
       releaseYear: 2020,
       genre: 'R&B/Soul',
       songCount: 14,
@@ -116,7 +123,8 @@ class SampleData {
       title: '÷ (Divide)',
       artist: 'Ed Sheeran',
       artistId: 'artist_2',
-      artworkUrl: 'https://i.scdn.co/image/ab67616d0000b273ba5db46f4b838ef6027e6f96',
+      artworkUrl:
+          'https://i.scdn.co/image/ab67616d0000b273ba5db46f4b838ef6027e6f96',
       releaseYear: 2017,
       genre: 'Pop',
       songCount: 16,
@@ -128,7 +136,8 @@ class SampleData {
       title: 'When We All Fall Asleep, Where Do We Go?',
       artist: 'Billie Eilish',
       artistId: 'artist_3',
-      artworkUrl: 'https://i.scdn.co/image/ab67616d0000b27350a3147b4edd7701a876c6ce',
+      artworkUrl:
+          'https://i.scdn.co/image/ab67616d0000b27350a3147b4edd7701a876c6ce',
       releaseYear: 2019,
       genre: 'Pop',
       songCount: 14,
@@ -141,7 +150,8 @@ class SampleData {
       title: 'Future Nostalgia',
       artist: 'Dua Lipa',
       artistId: 'artist_5',
-      artworkUrl: 'https://i.scdn.co/image/ab67616d0000b2734bc66095f8a70bc4e6593f4f',
+      artworkUrl:
+          'https://i.scdn.co/image/ab67616d0000b2734bc66095f8a70bc4e6593f4f',
       releaseYear: 2020,
       genre: 'Pop',
       songCount: 11,
@@ -156,7 +166,8 @@ class SampleData {
       title: 'Starboy',
       artist: 'The Weeknd',
       artistId: 'artist_1',
-      artworkUrl: 'https://i.scdn.co/image/ab67616d0000b2734718e2b124f79258be7bc452',
+      artworkUrl:
+          'https://i.scdn.co/image/ab67616d0000b2734718e2b124f79258be7bc452',
       releaseYear: 2016,
       genre: 'R&B/Soul',
       songCount: 18,
@@ -168,7 +179,8 @@ class SampleData {
       title: 'Uptown Special',
       artist: 'Mark Ronson',
       artistId: 'artist_4',
-      artworkUrl: 'https://i.scdn.co/image/ab67616d0000b2731c7dc94382e7d9da53f5ac20',
+      artworkUrl:
+          'https://i.scdn.co/image/ab67616d0000b2731c7dc94382e7d9da53f5ac20',
       releaseYear: 2015,
       genre: 'Funk',
       songCount: 11,
@@ -180,7 +192,8 @@ class SampleData {
       title: 'Midnights',
       artist: 'Taylor Swift',
       artistId: 'artist_6',
-      artworkUrl: 'https://i.scdn.co/image/ab67616d0000b273bb54dde68cd23e2a268ae0f5',
+      artworkUrl:
+          'https://i.scdn.co/image/ab67616d0000b273bb54dde68cd23e2a268ae0f5',
       releaseYear: 2022,
       genre: 'Pop',
       songCount: 13,
@@ -191,7 +204,8 @@ class SampleData {
       title: 'Harry\'s House',
       artist: 'Harry Styles',
       artistId: 'artist_7',
-      artworkUrl: 'https://i.scdn.co/image/ab67616d0000b2732e8ed79e177ff6011076f5f0',
+      artworkUrl:
+          'https://i.scdn.co/image/ab67616d0000b2732e8ed79e177ff6011076f5f0',
       releaseYear: 2022,
       genre: 'Pop',
       songCount: 13,
@@ -203,17 +217,20 @@ class SampleData {
     const Artist(
       id: 'artist_1',
       name: 'The Weeknd',
-      imageUrl: 'https://i.scdn.co/image/ab6761610000e5eb214f3cf1cbe7139c1e26ffbb',
+      imageUrl:
+          'https://i.scdn.co/image/ab6761610000e5eb214f3cf1cbe7139c1e26ffbb',
       genres: ['R&B', 'Pop', 'Soul'],
       albumCount: 5,
       followerCount: 75000000,
       isVerified: true,
-      bio: 'Abel Makkonen Tesfaye, known professionally as the Weeknd, is a Canadian singer, songwriter, and record producer.',
+      bio:
+          'Abel Makkonen Tesfaye, known professionally as the Weeknd, is a Canadian singer, songwriter, and record producer.',
     ),
     const Artist(
       id: 'artist_2',
       name: 'Ed Sheeran',
-      imageUrl: 'https://i.scdn.co/image/ab6761610000e5eb12a2ef08d00dd7451a6dbed6',
+      imageUrl:
+          'https://i.scdn.co/image/ab6761610000e5eb12a2ef08d00dd7451a6dbed6',
       genres: ['Pop', 'Folk', 'Acoustic'],
       albumCount: 5,
       followerCount: 90000000,
@@ -223,17 +240,20 @@ class SampleData {
     const Artist(
       id: 'artist_3',
       name: 'Billie Eilish',
-      imageUrl: 'https://i.scdn.co/image/ab6761610000e5ebd8b9980db67272cb4d2c3daf',
+      imageUrl:
+          'https://i.scdn.co/image/ab6761610000e5ebd8b9980db67272cb4d2c3daf',
       genres: ['Pop', 'Electropop'],
       albumCount: 3,
       followerCount: 65000000,
       isVerified: true,
-      bio: 'Billie Eilish Pirate Baird O\'Connell is an American singer and songwriter.',
+      bio:
+          'Billie Eilish Pirate Baird O\'Connell is an American singer and songwriter.',
     ),
     const Artist(
       id: 'artist_5',
       name: 'Dua Lipa',
-      imageUrl: 'https://i.scdn.co/image/ab6761610000e5eb1bbee4a02f85ecc58d385c3e',
+      imageUrl:
+          'https://i.scdn.co/image/ab6761610000e5eb1bbee4a02f85ecc58d385c3e',
       genres: ['Pop', 'Dance'],
       albumCount: 3,
       followerCount: 50000000,
@@ -256,7 +276,8 @@ class SampleData {
       id: 'playlist_1',
       name: 'Today\'s Top Hits',
       description: 'The biggest songs right now',
-      artworkUrl: 'https://i.scdn.co/image/ab67706f00000003c9ced4e16a40b61eb98a89bb',
+      artworkUrl:
+          'https://i.scdn.co/image/ab67706f00000003c9ced4e16a40b61eb98a89bb',
       songCount: 50,
       totalDuration: const Duration(hours: 2, minutes: 45),
       createdAt: DateTime.now().subtract(const Duration(days: 30)),
@@ -267,7 +288,8 @@ class SampleData {
       id: 'playlist_2',
       name: 'Chill Vibes',
       description: 'Relax and unwind',
-      artworkUrl: 'https://i.scdn.co/image/ab67706f00000003ca5a7517156021292e5663a6',
+      artworkUrl:
+          'https://i.scdn.co/image/ab67706f00000003ca5a7517156021292e5663a6',
       songCount: 75,
       totalDuration: const Duration(hours: 4, minutes: 30),
       createdAt: DateTime.now().subtract(const Duration(days: 60)),

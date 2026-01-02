@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax/iconsax.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../../../core/utils/app_logger.dart';
 import '../../../providers/local_music_provider.dart';
 import '../../../services/local_music/local_music_scanner.dart';
 import '../../../data/adapters/hive_adapters.dart';
@@ -38,18 +39,18 @@ class SettingsScreen extends ConsumerWidget {
         children: [
           // Library Stats Card
           _buildStatsCard(libraryStats),
-          
+
           const SizedBox(height: 24),
-          
+
           // Scan Progress (if scanning)
           scanProgressAsync.when(
             data: (progress) => progress.isScanning
                 ? _buildScanProgressCard(progress)
                 : const SizedBox.shrink(),
             loading: () => const SizedBox.shrink(),
-            error: (_, __) => const SizedBox.shrink(),
+            error: (error, stackTrace) => const SizedBox.shrink(),
           ),
-          
+
           // Music Folders Section
           Text(
             'Music Folders',
@@ -65,28 +66,30 @@ class SettingsScreen extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 16),
-          
+
           // Add Folder Button
           _buildAddFolderButton(context, ref),
-          
+
           const SizedBox(height: 16),
-          
+
           // Folder List
           if (scanFolders.isEmpty)
             _buildEmptyFoldersMessage()
           else
-            ...scanFolders.map((folder) => _buildFolderTile(context, ref, folder)),
-          
+            ...scanFolders.map(
+              (folder) => _buildFolderTile(context, ref, folder),
+            ),
+
           const SizedBox(height: 24),
-          
+
           // Scan Buttons
           _buildScanButtons(context, ref, scanFolders.isNotEmpty),
-          
+
           const SizedBox(height: 24),
-          
+
           // Danger Zone
           _buildDangerZone(context, ref),
-          
+
           const SizedBox(height: 100),
         ],
       ),
@@ -101,14 +104,12 @@ class SettingsScreen extends ConsumerWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            AppColors.glassDark.withOpacity(0.8),
-            AppColors.glassLight.withOpacity(0.6),
+            AppColors.glassDark.withValues(alpha: 0.8),
+            AppColors.glassLight.withValues(alpha: 0.6),
           ],
         ),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: AppColors.glassBorder.withOpacity(0.3),
-        ),
+        border: Border.all(color: AppColors.glassBorder.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -123,9 +124,17 @@ class SettingsScreen extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildStatItem(Icons.music_note, '${stats['songs'] ?? 0}', 'Songs'),
+              _buildStatItem(
+                Icons.music_note,
+                '${stats['songs'] ?? 0}',
+                'Songs',
+              ),
               _buildStatItem(Icons.album, '${stats['albums'] ?? 0}', 'Albums'),
-              _buildStatItem(Icons.person, '${stats['artists'] ?? 0}', 'Artists'),
+              _buildStatItem(
+                Icons.person,
+                '${stats['artists'] ?? 0}',
+                'Artists',
+              ),
             ],
           ),
         ],
@@ -161,12 +170,12 @@ class SettingsScreen extends ConsumerWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppColors.primary.withOpacity(0.2),
-            AppColors.primaryDark.withOpacity(0.1),
+            AppColors.primary.withValues(alpha: 0.2),
+            AppColors.primaryDark.withValues(alpha: 0.1),
           ],
         ),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -196,7 +205,9 @@ class SettingsScreen extends ConsumerWidget {
             child: LinearProgressIndicator(
               value: progress.progress,
               backgroundColor: AppColors.glassDark,
-              valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
+              valueColor: const AlwaysStoppedAnimation<Color>(
+                AppColors.primary,
+              ),
               minHeight: 8,
             ),
           ),
@@ -231,7 +242,7 @@ class SettingsScreen extends ConsumerWidget {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           border: Border.all(
-            color: AppColors.primary.withOpacity(0.5),
+            color: AppColors.primary.withValues(alpha: 0.5),
             width: 2,
             strokeAlign: BorderSide.strokeAlignCenter,
           ),
@@ -244,9 +255,7 @@ class SettingsScreen extends ConsumerWidget {
             const SizedBox(width: 12),
             Text(
               'Add Music Folder',
-              style: AppTextStyles.headline.copyWith(
-                color: AppColors.primary,
-              ),
+              style: AppTextStyles.headline.copyWith(color: AppColors.primary),
             ),
           ],
         ),
@@ -262,7 +271,7 @@ class SettingsScreen extends ConsumerWidget {
           Icon(
             Iconsax.folder,
             size: 48,
-            color: AppColors.textSecondaryDark.withOpacity(0.5),
+            color: AppColors.textSecondaryDark.withValues(alpha: 0.5),
           ),
           const SizedBox(height: 16),
           Text(
@@ -284,7 +293,11 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildFolderTile(BuildContext context, WidgetRef ref, ScanFolder folder) {
+  Widget _buildFolderTile(
+    BuildContext context,
+    WidgetRef ref,
+    ScanFolder folder,
+  ) {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
@@ -296,14 +309,16 @@ class SettingsScreen extends ConsumerWidget {
           width: 44,
           height: 44,
           decoration: BoxDecoration(
-            color: folder.isEnabled 
-                ? AppColors.primary.withOpacity(0.2) 
+            color: folder.isEnabled
+                ? AppColors.primary.withValues(alpha: 0.2)
                 : AppColors.glassDark,
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(
             Iconsax.folder,
-            color: folder.isEnabled ? AppColors.primary : AppColors.textSecondaryDark,
+            color: folder.isEnabled
+                ? AppColors.primary
+                : AppColors.textSecondaryDark,
           ),
         ),
         title: Text(
@@ -329,7 +344,10 @@ class SettingsScreen extends ConsumerWidget {
               activeThumbColor: AppColors.primary,
             ),
             IconButton(
-              icon: const Icon(Iconsax.trash, color: AppColors.textSecondaryDark),
+              icon: const Icon(
+                Iconsax.trash,
+                color: AppColors.textSecondaryDark,
+              ),
               onPressed: () => _showDeleteFolderDialog(context, ref, folder),
             ),
           ],
@@ -338,7 +356,11 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildScanButtons(BuildContext context, WidgetRef ref, bool hasFolders) {
+  Widget _buildScanButtons(
+    BuildContext context,
+    WidgetRef ref,
+    bool hasFolders,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -357,9 +379,9 @@ class SettingsScreen extends ConsumerWidget {
               ),
             ),
           ),
-        
+
         if (hasFolders) const SizedBox(height: 12),
-        
+
         // Scan All Music
         OutlinedButton.icon(
           onPressed: () => _showFullScanConfirmation(context, ref),
@@ -409,18 +431,20 @@ class SettingsScreen extends ConsumerWidget {
   Future<void> _pickFolder(BuildContext context, WidgetRef ref) async {
     final pickFolder = ref.read(pickFolderProvider);
     final path = await pickFolder();
-    
+
     if (path != null) {
       // Check if directory is accessible
       final dir = Directory(path);
       final exists = await dir.exists();
-      
+
       // Even if the directory check fails, we'll add it and let the scanner try
       // The scanner has fallback logic for alternative paths
       if (!exists) {
-        print('Directory not directly accessible, but will add anyway: $path');
+        AppLogger.warning(
+          'Directory not directly accessible, but will add anyway: $path',
+        );
       }
-      
+
       final name = path.split(Platform.pathSeparator).last;
       final folder = ScanFolder(
         path: path,
@@ -428,7 +452,7 @@ class SettingsScreen extends ConsumerWidget {
         addedAt: DateTime.now(),
       );
       await ref.read(scanFoldersProvider.notifier).addFolder(folder);
-      
+
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -438,11 +462,11 @@ class SettingsScreen extends ConsumerWidget {
           ),
         );
       }
-      
+
       // Auto-scan the newly added folder
       final scanFolder = ref.read(scanSingleFolderProvider);
       await scanFolder(path);
-      
+
       if (context.mounted) {
         final songCount = ref.read(localSongsProvider).length;
         ScaffoldMessenger.of(context).showSnackBar(
@@ -455,23 +479,34 @@ class SettingsScreen extends ConsumerWidget {
     }
   }
 
-  Future<void> _startScan(WidgetRef ref, {required bool useSelectedFolders}) async {
+  Future<void> _startScan(
+    WidgetRef ref, {
+    required bool useSelectedFolders,
+  }) async {
     final scanAction = ref.read(scanMusicActionProvider);
     await scanAction(useSelectedFolders: useSelectedFolders);
   }
 
-  void _showDeleteFolderDialog(BuildContext context, WidgetRef ref, ScanFolder folder) {
+  void _showDeleteFolderDialog(
+    BuildContext context,
+    WidgetRef ref,
+    ScanFolder folder,
+  ) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.surfaceDark,
         title: Text(
           'Remove Folder',
-          style: AppTextStyles.title3.copyWith(color: AppColors.textPrimaryDark),
+          style: AppTextStyles.title3.copyWith(
+            color: AppColors.textPrimaryDark,
+          ),
         ),
         content: Text(
           'Remove "${folder.name}" from scan folders?\n\nThis will also remove all songs from this folder from your library.',
-          style: AppTextStyles.body.copyWith(color: AppColors.textSecondaryDark),
+          style: AppTextStyles.body.copyWith(
+            color: AppColors.textSecondaryDark,
+          ),
         ),
         actions: [
           TextButton(
@@ -481,14 +516,16 @@ class SettingsScreen extends ConsumerWidget {
           TextButton(
             onPressed: () async {
               Navigator.pop(context);
-              
+
               // Remove songs from this folder
               final removeSongs = ref.read(removeFolderSongsProvider);
               await removeSongs(folder.path);
-              
+
               // Remove the folder
-              await ref.read(scanFoldersProvider.notifier).removeFolder(folder.path);
-              
+              await ref
+                  .read(scanFoldersProvider.notifier)
+                  .removeFolder(folder.path);
+
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
@@ -506,21 +543,27 @@ class SettingsScreen extends ConsumerWidget {
   }
 
   /// Toggle folder enabled/disabled and update songs accordingly
-  Future<void> _toggleFolder(BuildContext context, WidgetRef ref, ScanFolder folder) async {
+  Future<void> _toggleFolder(
+    BuildContext context,
+    WidgetRef ref,
+    ScanFolder folder,
+  ) async {
     final wasEnabled = folder.isEnabled;
-    
+
     // Toggle the folder
     await ref.read(scanFoldersProvider.notifier).toggleFolder(folder.path);
-    
+
     if (wasEnabled) {
       // Folder was enabled, now disabled - remove songs from this folder
       final removeSongs = ref.read(removeFolderSongsProvider);
       await removeSongs(folder.path);
-      
+
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Disabled folder: ${folder.name}. Songs removed from library.'),
+            content: Text(
+              'Disabled folder: ${folder.name}. Songs removed from library.',
+            ),
             backgroundColor: AppColors.primary,
           ),
         );
@@ -536,10 +579,10 @@ class SettingsScreen extends ConsumerWidget {
           ),
         );
       }
-      
+
       final scanFolder = ref.read(scanSingleFolderProvider);
       await scanFolder(folder.path);
-      
+
       if (context.mounted) {
         final songCount = ref.read(localSongsProvider).length;
         ScaffoldMessenger.of(context).showSnackBar(
@@ -564,7 +607,9 @@ class SettingsScreen extends ConsumerWidget {
             const SizedBox(width: 12),
             Text(
               'Scan Entire Device',
-              style: AppTextStyles.title3.copyWith(color: AppColors.textPrimaryDark),
+              style: AppTextStyles.title3.copyWith(
+                color: AppColors.textPrimaryDark,
+              ),
             ),
           ],
         ),
@@ -574,7 +619,9 @@ class SettingsScreen extends ConsumerWidget {
           children: [
             Text(
               'This will scan ALL audio files on your device, including:',
-              style: AppTextStyles.body.copyWith(color: AppColors.textSecondaryDark),
+              style: AppTextStyles.body.copyWith(
+                color: AppColors.textSecondaryDark,
+              ),
             ),
             const SizedBox(height: 12),
             _buildBulletPoint('Ringtones & notifications'),
@@ -585,18 +632,26 @@ class SettingsScreen extends ConsumerWidget {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.1),
+                color: AppColors.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+                border: Border.all(
+                  color: AppColors.primary.withValues(alpha: 0.3),
+                ),
               ),
               child: Row(
                 children: [
-                  const Icon(Iconsax.info_circle, color: AppColors.primary, size: 20),
+                  const Icon(
+                    Iconsax.info_circle,
+                    color: AppColors.primary,
+                    size: 20,
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       'For a cleaner library, use "Add Music Folder" to select specific folders.',
-                      style: AppTextStyles.caption1.copyWith(color: AppColors.primary),
+                      style: AppTextStyles.caption1.copyWith(
+                        color: AppColors.primary,
+                      ),
                     ),
                   ),
                 ],
@@ -633,12 +688,16 @@ class SettingsScreen extends ConsumerWidget {
         children: [
           Text(
             '• ',
-            style: AppTextStyles.body.copyWith(color: AppColors.textSecondaryDark),
+            style: AppTextStyles.body.copyWith(
+              color: AppColors.textSecondaryDark,
+            ),
           ),
           Expanded(
             child: Text(
               text,
-              style: AppTextStyles.body.copyWith(color: AppColors.textSecondaryDark),
+              style: AppTextStyles.body.copyWith(
+                color: AppColors.textSecondaryDark,
+              ),
             ),
           ),
         ],
@@ -653,11 +712,15 @@ class SettingsScreen extends ConsumerWidget {
         backgroundColor: AppColors.surfaceDark,
         title: Text(
           'Clear Library',
-          style: AppTextStyles.title3.copyWith(color: AppColors.textPrimaryDark),
+          style: AppTextStyles.title3.copyWith(
+            color: AppColors.textPrimaryDark,
+          ),
         ),
         content: Text(
           'This will remove all scanned music from the library. Your actual music files will not be deleted.',
-          style: AppTextStyles.body.copyWith(color: AppColors.textSecondaryDark),
+          style: AppTextStyles.body.copyWith(
+            color: AppColors.textSecondaryDark,
+          ),
         ),
         actions: [
           TextButton(

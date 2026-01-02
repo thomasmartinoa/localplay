@@ -34,19 +34,22 @@ class SectionHeader extends StatelessWidget {
             GestureDetector(
               onTap: onSeeAll,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      AppColors.glassDark.withOpacity(0.6),
-                      AppColors.glassLight.withOpacity(0.4),
+                      AppColors.glassDark.withValues(alpha: 0.6),
+                      AppColors.glassLight.withValues(alpha: 0.4),
                     ],
                   ),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: AppColors.glassBorder.withOpacity(0.2),
+                    color: AppColors.glassBorder.withValues(alpha: 0.2),
                     width: 1,
                   ),
                 ),

@@ -10,11 +10,7 @@ class PlaylistTile extends StatelessWidget {
   final Playlist playlist;
   final VoidCallback? onTap;
 
-  const PlaylistTile({
-    super.key,
-    required this.playlist,
-    this.onTap,
-  });
+  const PlaylistTile({super.key, required this.playlist, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +47,9 @@ class PlaylistTile extends StatelessWidget {
         Icons.chevron_right,
         color: AppColors.textSecondaryDark,
       ),
-      onTap: onTap ?? () => context.push('/playlist/${playlist.id}', extra: playlist),
+      onTap:
+          onTap ??
+          () => context.push('/playlist/${playlist.id}', extra: playlist),
     );
   }
 
@@ -64,7 +62,7 @@ class PlaylistTile extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            AppColors.primary.withOpacity(0.8),
+            AppColors.primary.withValues(alpha: 0.8),
             AppColors.primaryDark,
           ],
         ),

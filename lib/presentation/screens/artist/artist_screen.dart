@@ -15,11 +15,7 @@ class ArtistScreen extends ConsumerWidget {
   final String artistId;
   final Artist? artist;
 
-  const ArtistScreen({
-    super.key,
-    required this.artistId,
-    this.artist,
-  });
+  const ArtistScreen({super.key, required this.artistId, this.artist});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -31,9 +27,7 @@ class ArtistScreen extends ConsumerWidget {
     if (displayArtist == null) {
       return Scaffold(
         backgroundColor: AppColors.backgroundDark,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-        ),
+        appBar: AppBar(backgroundColor: Colors.transparent),
         body: const Center(
           child: CircularProgressIndicator(color: AppColors.primary),
         ),
@@ -69,7 +63,7 @@ class ArtistScreen extends ConsumerWidget {
                         end: Alignment.bottomCenter,
                         colors: [
                           Colors.transparent,
-                          AppColors.backgroundDark.withOpacity(0.8),
+                          AppColors.backgroundDark.withValues(alpha: 0.8),
                           AppColors.backgroundDark,
                         ],
                       ),
@@ -161,7 +155,8 @@ class ArtistScreen extends ConsumerWidget {
                     return Padding(
                       padding: const EdgeInsets.only(right: 16),
                       child: GestureDetector(
-                        onTap: () => context.push('/album/${album.id}', extra: album),
+                        onTap: () =>
+                            context.push('/album/${album.id}', extra: album),
                         child: SizedBox(
                           width: 130,
                           child: Column(
@@ -174,7 +169,9 @@ class ArtistScreen extends ConsumerWidget {
                                   borderRadius: BorderRadius.circular(12),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: AppColors.shadowDark.withOpacity(0.3),
+                                      color: AppColors.shadowDark.withValues(
+                                        alpha: 0.3,
+                                      ),
                                       blurRadius: 12,
                                       offset: const Offset(0, 6),
                                     ),
@@ -241,22 +238,18 @@ class ArtistScreen extends ConsumerWidget {
             )
           else
             SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  final song = artistSongs[index];
-                  return SongTile(
-                    song: song,
-                    onTap: () => audioService.playQueue(artistSongs, startIndex: index),
-                  );
-                },
-                childCount: artistSongs.length,
-              ),
+              delegate: SliverChildBuilderDelegate((context, index) {
+                final song = artistSongs[index];
+                return SongTile(
+                  song: song,
+                  onTap: () =>
+                      audioService.playQueue(artistSongs, startIndex: index),
+                );
+              }, childCount: artistSongs.length),
             ),
 
           // Bottom padding
-          const SliverToBoxAdapter(
-            child: SizedBox(height: 160),
-          ),
+          const SliverToBoxAdapter(child: SizedBox(height: 160)),
         ],
       ),
     );
@@ -277,7 +270,7 @@ class ArtistScreen extends ConsumerWidget {
         }
       }
     }
-    
+
     // Check artist image
     if (artist.imageUrl != null) {
       final file = File(artist.imageUrl!);
@@ -289,7 +282,7 @@ class ArtistScreen extends ConsumerWidget {
         );
       }
     }
-    
+
     return _buildArtistPlaceholder();
   }
 
@@ -299,7 +292,7 @@ class ArtistScreen extends ConsumerWidget {
       child: Center(
         child: Icon(
           Iconsax.user,
-          color: AppColors.textSecondaryDark.withOpacity(0.5),
+          color: AppColors.textSecondaryDark.withValues(alpha: 0.5),
           size: 80,
         ),
       ),
@@ -330,15 +323,12 @@ class ArtistScreen extends ConsumerWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            AppColors.glassDark,
-            AppColors.glassLight,
-          ],
+          colors: [AppColors.glassDark, AppColors.glassLight],
         ),
       ),
       child: Icon(
         Iconsax.cd,
-        color: AppColors.textSecondaryDark.withOpacity(0.5),
+        color: AppColors.textSecondaryDark.withValues(alpha: 0.5),
         size: 48,
       ),
     );

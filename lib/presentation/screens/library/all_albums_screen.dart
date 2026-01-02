@@ -20,25 +20,31 @@ enum AlbumSortOption {
 }
 
 /// Provider for album sort option
-final albumSortOptionProvider = StateProvider<AlbumSortOption>((ref) => AlbumSortOption.title);
+final albumSortOptionProvider = StateProvider<AlbumSortOption>(
+  (ref) => AlbumSortOption.title,
+);
 
 /// Provider for sorted albums
 final sortedAlbumsProvider = Provider<List<Album>>((ref) {
   final albums = ref.watch(localAlbumsProvider);
   final sortOption = ref.watch(albumSortOptionProvider);
-  
+
   final sortedAlbums = List<Album>.from(albums);
   switch (sortOption) {
     case AlbumSortOption.title:
-      sortedAlbums.sort((a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()));
+      sortedAlbums.sort(
+        (a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()),
+      );
     case AlbumSortOption.artist:
-      sortedAlbums.sort((a, b) => a.artist.toLowerCase().compareTo(b.artist.toLowerCase()));
+      sortedAlbums.sort(
+        (a, b) => a.artist.toLowerCase().compareTo(b.artist.toLowerCase()),
+      );
     case AlbumSortOption.year:
       sortedAlbums.sort((a, b) => b.releaseYear.compareTo(a.releaseYear));
     case AlbumSortOption.songCount:
       sortedAlbums.sort((a, b) => b.songCount.compareTo(a.songCount));
   }
-  
+
   return sortedAlbums;
 });
 
@@ -99,7 +105,7 @@ class AllAlbumsScreen extends ConsumerWidget {
                   Text(
                     'Sorted by ${sortOption.label}',
                     style: AppTextStyles.caption1.copyWith(
-                      color: AppColors.textSecondaryDark.withOpacity(0.7),
+                      color: AppColors.textSecondaryDark.withValues(alpha: 0.7),
                     ),
                   ),
                 ],
@@ -122,7 +128,7 @@ class AllAlbumsScreen extends ConsumerWidget {
                     Icon(
                       Iconsax.cd,
                       size: 64,
-                      color: AppColors.textSecondaryDark.withOpacity(0.5),
+                      color: AppColors.textSecondaryDark.withValues(alpha: 0.5),
                     ),
                     const SizedBox(height: 16),
                     Text(
@@ -135,7 +141,9 @@ class AllAlbumsScreen extends ConsumerWidget {
                     Text(
                       'Scan your device to find music',
                       style: AppTextStyles.subhead.copyWith(
-                        color: AppColors.textSecondaryDark.withOpacity(0.7),
+                        color: AppColors.textSecondaryDark.withValues(
+                          alpha: 0.7,
+                        ),
                       ),
                     ),
                   ],
@@ -152,20 +160,15 @@ class AllAlbumsScreen extends ConsumerWidget {
                   crossAxisSpacing: 16,
                   mainAxisSpacing: 20,
                 ),
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final album = albums[index];
-                    return _AlbumGridItem(album: album);
-                  },
-                  childCount: albums.length,
-                ),
+                delegate: SliverChildBuilderDelegate((context, index) {
+                  final album = albums[index];
+                  return _AlbumGridItem(album: album);
+                }, childCount: albums.length),
               ),
             ),
 
           // Bottom padding for mini player
-          const SliverToBoxAdapter(
-            child: SizedBox(height: 160),
-          ),
+          const SliverToBoxAdapter(child: SizedBox(height: 160)),
         ],
       ),
     );
@@ -173,7 +176,7 @@ class AllAlbumsScreen extends ConsumerWidget {
 
   void _showSortOptions(BuildContext context, WidgetRef ref) {
     final currentSort = ref.read(albumSortOptionProvider);
-    
+
     showModalBottomSheet(
       context: context,
       backgroundColor: AppColors.surfaceDark,
@@ -189,7 +192,7 @@ class AllAlbumsScreen extends ConsumerWidget {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: AppColors.glassHighlight.withOpacity(0.5),
+                color: AppColors.glassHighlight.withValues(alpha: 0.5),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -201,26 +204,34 @@ class AllAlbumsScreen extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 16),
-            ...AlbumSortOption.values.map((option) => ListTile(
-              leading: Icon(
-                _getSortIcon(option),
-                color: currentSort == option ? AppColors.primary : AppColors.textSecondaryDark,
-              ),
-              title: Text(
-                option.label,
-                style: TextStyle(
-                  color: currentSort == option ? AppColors.primary : AppColors.textPrimaryDark,
-                  fontWeight: currentSort == option ? FontWeight.w600 : FontWeight.normal,
+            ...AlbumSortOption.values.map(
+              (option) => ListTile(
+                leading: Icon(
+                  _getSortIcon(option),
+                  color: currentSort == option
+                      ? AppColors.primary
+                      : AppColors.textSecondaryDark,
                 ),
+                title: Text(
+                  option.label,
+                  style: TextStyle(
+                    color: currentSort == option
+                        ? AppColors.primary
+                        : AppColors.textPrimaryDark,
+                    fontWeight: currentSort == option
+                        ? FontWeight.w600
+                        : FontWeight.normal,
+                  ),
+                ),
+                trailing: currentSort == option
+                    ? const Icon(Icons.check, color: AppColors.primary)
+                    : null,
+                onTap: () {
+                  ref.read(albumSortOptionProvider.notifier).state = option;
+                  Navigator.pop(context);
+                },
               ),
-              trailing: currentSort == option
-                  ? const Icon(Icons.check, color: AppColors.primary)
-                  : null,
-              onTap: () {
-                ref.read(albumSortOptionProvider.notifier).state = option;
-                Navigator.pop(context);
-              },
-            )),
+            ),
             const SizedBox(height: 16),
           ],
         ),
@@ -262,7 +273,7 @@ class _AlbumGridItem extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.shadowDark.withOpacity(0.3),
+                    color: AppColors.shadowDark.withValues(alpha: 0.3),
                     blurRadius: 12,
                     offset: const Offset(0, 6),
                     spreadRadius: -4,
@@ -316,7 +327,7 @@ class _AlbumGridItem extends StatelessWidget {
         );
       }
     }
-    
+
     return _buildPlaceholder();
   }
 
@@ -328,15 +339,12 @@ class _AlbumGridItem extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            AppColors.glassDark,
-            AppColors.glassLight,
-          ],
+          colors: [AppColors.glassDark, AppColors.glassLight],
         ),
       ),
       child: Icon(
         Iconsax.cd,
-        color: AppColors.textSecondaryDark.withOpacity(0.5),
+        color: AppColors.textSecondaryDark.withValues(alpha: 0.5),
         size: 48,
       ),
     );

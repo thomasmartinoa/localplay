@@ -15,13 +15,13 @@ class AppColors {
   static const Color backgroundGradientStart = Color(0xFF0F0F1A);
   static const Color backgroundGradientEnd = Color(0xFF050508);
   static const Color backgroundLight = Color(0xFFF2F2F7);
-  
+
   // Glass Surface Colors (for frosted glass effect)
   static const Color glassDark = Color(0xFF1A1A2E);
   static const Color glassLight = Color(0xFF16162A);
   static const Color glassBorder = Color(0xFF2A2A4A);
   static const Color glassHighlight = Color(0xFF3A3A5A);
-  
+
   // Frosted Glass Overlays
   static const Color glassOverlay = Color(0x1AFFFFFF);
   static const Color glassOverlayLight = Color(0x0DFFFFFF);
@@ -54,7 +54,7 @@ class AppColors {
     Color(0x1A6366F1),
     Color(0x0AEC4899),
   ];
-  
+
   static const List<Color> primaryGradient = [
     Color(0xFFFF2D55),
     Color(0xFFFF6B8A),

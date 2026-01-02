@@ -24,7 +24,8 @@ class AlbumCard extends StatefulWidget {
   State<AlbumCard> createState() => _AlbumCardState();
 }
 
-class _AlbumCardState extends State<AlbumCard> with SingleTickerProviderStateMixin {
+class _AlbumCardState extends State<AlbumCard>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
 
@@ -35,9 +36,10 @@ class _AlbumCardState extends State<AlbumCard> with SingleTickerProviderStateMix
       duration: const Duration(milliseconds: 150),
       vsync: this,
     );
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.95).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
-    );
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.95,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
   }
 
   @override
@@ -52,13 +54,13 @@ class _AlbumCardState extends State<AlbumCard> with SingleTickerProviderStateMix
       onTapDown: (_) => _controller.forward(),
       onTapUp: (_) => _controller.reverse(),
       onTapCancel: () => _controller.reverse(),
-      onTap: widget.onTap ?? () => context.push('/album/${widget.album.id}', extra: widget.album),
+      onTap:
+          widget.onTap ??
+          () => context.push('/album/${widget.album.id}', extra: widget.album),
       child: AnimatedBuilder(
         animation: _scaleAnimation,
-        builder: (context, child) => Transform.scale(
-          scale: _scaleAnimation.value,
-          child: child,
-        ),
+        builder: (context, child) =>
+            Transform.scale(scale: _scaleAnimation.value, child: child),
         child: SizedBox(
           width: widget.size,
           child: Column(
@@ -71,13 +73,13 @@ class _AlbumCardState extends State<AlbumCard> with SingleTickerProviderStateMix
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.shadowDark.withOpacity(0.5),
+                      color: AppColors.shadowDark.withValues(alpha: 0.5),
                       blurRadius: 20,
                       offset: const Offset(0, 10),
                       spreadRadius: -5,
                     ),
                     BoxShadow(
-                      color: AppColors.primary.withOpacity(0.1),
+                      color: AppColors.primary.withValues(alpha: 0.1),
                       blurRadius: 30,
                       offset: const Offset(0, 15),
                       spreadRadius: -10,
@@ -110,7 +112,7 @@ class _AlbumCardState extends State<AlbumCard> with SingleTickerProviderStateMix
                   child: Text(
                     widget.album.artist,
                     style: TextStyle(
-                      color: AppColors.textSecondaryDark.withOpacity(0.8),
+                      color: AppColors.textSecondaryDark.withValues(alpha: 0.8),
                       fontSize: 12,
                       fontWeight: FontWeight.w400,
                       letterSpacing: 0,
@@ -140,7 +142,7 @@ class _AlbumCardState extends State<AlbumCard> with SingleTickerProviderStateMix
         );
       }
     }
-    
+
     // Fall back to network image
     if (widget.album.artworkUrl != null) {
       return CachedNetworkImage(
@@ -152,7 +154,7 @@ class _AlbumCardState extends State<AlbumCard> with SingleTickerProviderStateMix
         errorWidget: (context, url, error) => _buildPlaceholder(),
       );
     }
-    
+
     return _buildPlaceholder();
   }
 
@@ -164,16 +166,13 @@ class _AlbumCardState extends State<AlbumCard> with SingleTickerProviderStateMix
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            AppColors.glassDark,
-            AppColors.glassLight,
-          ],
+          colors: [AppColors.glassDark, AppColors.glassLight],
         ),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Icon(
         Icons.album_rounded,
-        color: AppColors.textSecondaryDark.withOpacity(0.5),
+        color: AppColors.textSecondaryDark.withValues(alpha: 0.5),
         size: widget.size * 0.35,
       ),
     );

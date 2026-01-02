@@ -61,14 +61,14 @@ class Artist extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        name,
-        imageUrl,
-        bio,
-        genres,
-        albums,
-        albumCount,
-        followerCount,
-        isVerified,
-      ];
+    id,
+    name,
+    imageUrl,
+    bio,
+    genres,
+    albums,
+    albumCount,
+    followerCount,
+    isVerified,
+  ];
 }

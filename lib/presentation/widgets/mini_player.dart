@@ -14,11 +14,11 @@ class MiniPlayer extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final playerState = ref.watch(playerStateProvider);
-    
+
     // Pure glass effect - fully transparent with strong blur
     // Like looking through thick clear glass
     const textColor = Colors.white;
-    final secondaryTextColor = Colors.white.withOpacity(0.6);
+    final secondaryTextColor = Colors.white.withValues(alpha: 0.6);
 
     return playerState.when(
       data: (state) {
@@ -54,7 +54,7 @@ class MiniPlayer extends ConsumerWidget {
                         borderRadius: BorderRadius.circular(6),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.3),
+                            color: Colors.black.withValues(alpha: 0.3),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
@@ -108,7 +108,9 @@ class MiniPlayer extends ConsumerWidget {
                         GestureDetector(
                           onTap: () {
                             HapticFeedback.lightImpact();
-                            ref.read(audioPlayerServiceProvider).togglePlayPause();
+                            ref
+                                .read(audioPlayerServiceProvider)
+                                .togglePlayPause();
                           },
                           child: Container(
                             width: 44,
@@ -143,7 +145,7 @@ class MiniPlayer extends ConsumerWidget {
                               Icons.fast_forward_rounded,
                               color: state.hasNext
                                   ? textColor
-                                  : textColor.withOpacity(0.3),
+                                  : textColor.withValues(alpha: 0.3),
                               size: 32,
                             ),
                           ),
@@ -158,7 +160,7 @@ class MiniPlayer extends ConsumerWidget {
         );
       },
       loading: () => const SizedBox.shrink(),
-      error: (_, __) => const SizedBox.shrink(),
+      error: (error, stackTrace) => const SizedBox.shrink(),
     );
   }
 
@@ -167,12 +169,12 @@ class MiniPlayer extends ConsumerWidget {
       width: 38,
       height: 38,
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
+        color: Colors.white.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Icon(
         Icons.music_note_rounded,
-        color: Colors.white.withOpacity(0.5),
+        color: Colors.white.withValues(alpha: 0.5),
         size: 18,
       ),
     );

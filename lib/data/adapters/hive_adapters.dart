@@ -40,9 +40,13 @@ class SongAdapter extends TypeAdapter<Song> {
       releaseYear: fields[15] as int?,
       isExplicit: fields[16] as bool? ?? false,
       isFavorite: fields[17] as bool? ?? false,
-      lastPlayed: fields[18] != null ? DateTime.fromMillisecondsSinceEpoch(fields[18] as int) : null,
+      lastPlayed: fields[18] != null
+          ? DateTime.fromMillisecondsSinceEpoch(fields[18] as int)
+          : null,
       playCount: fields[19] as int? ?? 0,
-      dateAdded: fields[20] != null ? DateTime.fromMillisecondsSinceEpoch(fields[20] as int) : null,
+      dateAdded: fields[20] != null
+          ? DateTime.fromMillisecondsSinceEpoch(fields[20] as int)
+          : null,
     );
   }
 

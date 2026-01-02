@@ -29,25 +29,22 @@ final appRouter = GoRouter(
         GoRoute(
           path: '/',
           name: 'home',
-          pageBuilder: (context, state) => const NoTransitionPage(
-            child: HomeScreen(),
-          ),
+          pageBuilder: (context, state) =>
+              const NoTransitionPage(child: HomeScreen()),
         ),
         // Browse/Search tab
         GoRoute(
           path: '/search',
           name: 'search',
-          pageBuilder: (context, state) => const NoTransitionPage(
-            child: SearchScreen(),
-          ),
+          pageBuilder: (context, state) =>
+              const NoTransitionPage(child: SearchScreen()),
         ),
         // Library tab
         GoRoute(
           path: '/library',
           name: 'library',
-          pageBuilder: (context, state) => const NoTransitionPage(
-            child: LibraryScreen(),
-          ),
+          pageBuilder: (context, state) =>
+              const NoTransitionPage(child: LibraryScreen()),
         ),
       ],
     ),
@@ -60,13 +57,13 @@ final appRouter = GoRouter(
         child: const NowPlayingScreen(),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return SlideTransition(
-            position: Tween<Offset>(
-              begin: const Offset(0, 1),
-              end: Offset.zero,
-            ).animate(CurvedAnimation(
-              parent: animation,
-              curve: Curves.easeOutCubic,
-            )),
+            position: Tween<Offset>(begin: const Offset(0, 1), end: Offset.zero)
+                .animate(
+                  CurvedAnimation(
+                    parent: animation,
+                    curve: Curves.easeOutCubic,
+                  ),
+                ),
             child: child,
           );
         },
@@ -78,10 +75,7 @@ final appRouter = GoRouter(
       name: 'album',
       builder: (context, state) {
         final album = state.extra as Album?;
-        return AlbumScreen(
-          albumId: state.pathParameters['id']!,
-          album: album,
-        );
+        return AlbumScreen(albumId: state.pathParameters['id']!, album: album);
       },
     ),
     // Playlist detail

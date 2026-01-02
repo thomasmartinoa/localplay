@@ -17,11 +17,7 @@ class PlaylistScreen extends ConsumerStatefulWidget {
   final String playlistId;
   final Playlist? playlist;
 
-  const PlaylistScreen({
-    super.key,
-    required this.playlistId,
-    this.playlist,
-  });
+  const PlaylistScreen({super.key, required this.playlistId, this.playlist});
 
   @override
   ConsumerState<PlaylistScreen> createState() => _PlaylistScreenState();
@@ -40,9 +36,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
     if (displayPlaylist == null) {
       return Scaffold(
         backgroundColor: AppColors.backgroundDark,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-        ),
+        appBar: AppBar(backgroundColor: Colors.transparent),
         body: const Center(
           child: CircularProgressIndicator(color: AppColors.primary),
         ),
@@ -92,7 +86,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
                         end: Alignment.bottomCenter,
                         colors: [
                           Colors.transparent,
-                          AppColors.backgroundDark.withOpacity(0.8),
+                          AppColors.backgroundDark.withValues(alpha: 0.8),
                           AppColors.backgroundDark,
                         ],
                       ),
@@ -139,7 +133,9 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
                       Expanded(
                         child: ElevatedButton.icon(
                           onPressed: displayPlaylist.songs.isNotEmpty
-                              ? () => audioService.playQueue(displayPlaylist.songs)
+                              ? () => audioService.playQueue(
+                                  displayPlaylist.songs,
+                                )
                               : null,
                           icon: const Icon(Icons.play_arrow_rounded),
                           label: const Text('Play'),
@@ -174,7 +170,8 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton.icon(
-                      onPressed: () => _showAddSongsSheet(context, displayPlaylist),
+                      onPressed: () =>
+                          _showAddSongsSheet(context, displayPlaylist),
                       icon: const Icon(Iconsax.add),
                       label: const Text('Add Songs'),
                       style: OutlinedButton.styleFrom(
@@ -233,34 +230,28 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
                 return ReorderableDelayedDragStartListener(
                   key: Key('edit_${song.id}'),
                   index: index,
-                  child: _buildEditableSongTile(
-                    song,
-                    displayPlaylist,
-                    index,
-                  ),
+                  child: _buildEditableSongTile(song, displayPlaylist, index),
                 );
               },
             )
           else
             SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  final song = displayPlaylist.songs[index];
-                  return SongTile(
-                    song: song,
-                    onTap: () {
-                      audioService.playQueue(displayPlaylist.songs, startIndex: index);
-                    },
-                  );
-                },
-                childCount: displayPlaylist.songs.length,
-              ),
+              delegate: SliverChildBuilderDelegate((context, index) {
+                final song = displayPlaylist.songs[index];
+                return SongTile(
+                  song: song,
+                  onTap: () {
+                    audioService.playQueue(
+                      displayPlaylist.songs,
+                      startIndex: index,
+                    );
+                  },
+                );
+              }, childCount: displayPlaylist.songs.length),
             ),
 
           // Bottom padding
-          const SliverToBoxAdapter(
-            child: SizedBox(height: 160),
-          ),
+          const SliverToBoxAdapter(child: SizedBox(height: 160)),
         ],
       ),
     );
@@ -290,18 +281,11 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            AppColors.primary,
-            AppColors.primaryDark,
-          ],
+          colors: [AppColors.primary, AppColors.primaryDark],
         ),
       ),
       child: const Center(
-        child: Icon(
-          Icons.music_note_rounded,
-          color: Colors.white,
-          size: 80,
-        ),
+        child: Icon(Icons.music_note_rounded, color: Colors.white, size: 80),
       ),
     );
   }
@@ -315,18 +299,13 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             // Drag handle
-            const Icon(
-              Icons.drag_handle,
-              color: AppColors.textSecondaryDark,
-            ),
+            const Icon(Icons.drag_handle, color: AppColors.textSecondaryDark),
             const SizedBox(width: 12),
             // Song artwork
             Container(
               width: 48,
               height: 48,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-              ),
+              decoration: BoxDecoration(borderRadius: BorderRadius.circular(8)),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(8),
                 child: _buildSongArtwork(song),
@@ -336,9 +315,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
         ),
         title: Text(
           song.title,
-          style: AppTextStyles.body.copyWith(
-            color: AppColors.textPrimaryDark,
-          ),
+          style: AppTextStyles.body.copyWith(color: AppColors.textPrimaryDark),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
@@ -351,10 +328,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
           overflow: TextOverflow.ellipsis,
         ),
         trailing: IconButton(
-          icon: const Icon(
-            Icons.remove_circle_outline,
-            color: Colors.red,
-          ),
+          icon: const Icon(Icons.remove_circle_outline, color: Colors.red),
           onPressed: () => _removeSongFromPlaylist(playlist, song),
         ),
       ),
@@ -385,15 +359,12 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            AppColors.glassDark,
-            AppColors.glassLight,
-          ],
+          colors: [AppColors.glassDark, AppColors.glassLight],
         ),
       ),
       child: Icon(
         Icons.music_note_rounded,
-        color: AppColors.textSecondaryDark.withOpacity(0.5),
+        color: AppColors.textSecondaryDark.withValues(alpha: 0.5),
         size: 20,
       ),
     );
@@ -406,19 +377,17 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
     final songs = List<Song>.from(playlist.songs);
     final song = songs.removeAt(oldIndex);
     songs.insert(newIndex, song);
-    
+
     // Update the playlist with reordered songs
-    ref.read(playlistsProvider.notifier).updatePlaylistSongs(
-      playlist.id,
-      songs,
-    );
+    ref
+        .read(playlistsProvider.notifier)
+        .updatePlaylistSongs(playlist.id, songs);
   }
 
   void _removeSongFromPlaylist(Playlist playlist, Song song) {
-    ref.read(playlistsProvider.notifier).removeSongFromPlaylist(
-      playlist.id,
-      song.id,
-    );
+    ref
+        .read(playlistsProvider.notifier)
+        .removeSongFromPlaylist(playlist.id, song.id);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Removed "${song.title}" from playlist'),
@@ -428,10 +397,9 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
           label: 'Undo',
           textColor: AppColors.primary,
           onPressed: () {
-            ref.read(playlistsProvider.notifier).addSongToPlaylist(
-              playlist.id,
-              song,
-            );
+            ref
+                .read(playlistsProvider.notifier)
+                .addSongToPlaylist(playlist.id, song);
           },
         ),
       ),
@@ -448,8 +416,10 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
           filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
           child: Container(
             decoration: BoxDecoration(
-              color: AppColors.surfaceDark.withOpacity(0.95),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+              color: AppColors.surfaceDark.withValues(alpha: 0.95),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(20),
+              ),
             ),
             child: SafeArea(
               child: Column(
@@ -460,16 +430,21 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
                     width: 40,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: AppColors.glassHighlight.withOpacity(0.5),
+                      color: AppColors.glassHighlight.withValues(alpha: 0.5),
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
                   const SizedBox(height: 20),
                   ListTile(
-                    leading: const Icon(Iconsax.edit, color: AppColors.textPrimaryDark),
+                    leading: const Icon(
+                      Iconsax.edit,
+                      color: AppColors.textPrimaryDark,
+                    ),
                     title: Text(
                       'Edit Playlist Name',
-                      style: AppTextStyles.body.copyWith(color: AppColors.textPrimaryDark),
+                      style: AppTextStyles.body.copyWith(
+                        color: AppColors.textPrimaryDark,
+                      ),
                     ),
                     onTap: () {
                       Navigator.pop(context);
@@ -477,10 +452,15 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
                     },
                   ),
                   ListTile(
-                    leading: const Icon(Iconsax.add, color: AppColors.textPrimaryDark),
+                    leading: const Icon(
+                      Iconsax.add,
+                      color: AppColors.textPrimaryDark,
+                    ),
                     title: Text(
                       'Add Songs',
-                      style: AppTextStyles.body.copyWith(color: AppColors.textPrimaryDark),
+                      style: AppTextStyles.body.copyWith(
+                        color: AppColors.textPrimaryDark,
+                      ),
                     ),
                     onTap: () {
                       Navigator.pop(context);
@@ -510,7 +490,9 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
 
   void _showEditPlaylistDialog(BuildContext context, Playlist playlist) {
     final nameController = TextEditingController(text: playlist.name);
-    final descriptionController = TextEditingController(text: playlist.description ?? '');
+    final descriptionController = TextEditingController(
+      text: playlist.description ?? '',
+    );
 
     showDialog(
       context: context,
@@ -531,7 +513,9 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
               style: const TextStyle(color: AppColors.textPrimaryDark),
               decoration: InputDecoration(
                 hintText: 'Playlist name',
-                hintStyle: TextStyle(color: AppColors.textSecondaryDark.withOpacity(0.5)),
+                hintStyle: TextStyle(
+                  color: AppColors.textSecondaryDark.withValues(alpha: 0.5),
+                ),
                 enabledBorder: OutlineInputBorder(
                   borderSide: BorderSide(color: AppColors.dividerDark),
                   borderRadius: BorderRadius.circular(8),
@@ -549,7 +533,9 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
               maxLines: 2,
               decoration: InputDecoration(
                 hintText: 'Description (optional)',
-                hintStyle: TextStyle(color: AppColors.textSecondaryDark.withOpacity(0.5)),
+                hintStyle: TextStyle(
+                  color: AppColors.textSecondaryDark.withValues(alpha: 0.5),
+                ),
                 enabledBorder: OutlineInputBorder(
                   borderSide: BorderSide(color: AppColors.dividerDark),
                   borderRadius: BorderRadius.circular(8),
@@ -573,13 +559,15 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
           TextButton(
             onPressed: () {
               if (nameController.text.isNotEmpty) {
-                ref.read(playlistsProvider.notifier).updatePlaylist(
-                  playlist.id,
-                  name: nameController.text,
-                  description: descriptionController.text.isNotEmpty 
-                      ? descriptionController.text 
-                      : null,
-                );
+                ref
+                    .read(playlistsProvider.notifier)
+                    .updatePlaylist(
+                      playlist.id,
+                      name: nameController.text,
+                      description: descriptionController.text.isNotEmpty
+                          ? descriptionController.text
+                          : null,
+                    );
                 Navigator.pop(context);
               }
             },
@@ -621,10 +609,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
               Navigator.pop(context); // Close dialog
               Navigator.pop(context); // Go back from playlist screen
             },
-            child: const Text(
-              'Delete',
-              style: TextStyle(color: Colors.red),
-            ),
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -639,10 +624,9 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
       builder: (context) => _AddSongsSheet(
         playlist: playlist,
         onAddSong: (song) {
-          ref.read(playlistsProvider.notifier).addSongToPlaylist(
-            playlist.id,
-            song,
-          );
+          ref
+              .read(playlistsProvider.notifier)
+              .addSongToPlaylist(playlist.id, song);
         },
       ),
     );
@@ -654,10 +638,7 @@ class _AddSongsSheet extends ConsumerStatefulWidget {
   final Playlist playlist;
   final Function(Song) onAddSong;
 
-  const _AddSongsSheet({
-    required this.playlist,
-    required this.onAddSong,
-  });
+  const _AddSongsSheet({required this.playlist, required this.onAddSong});
 
   @override
   ConsumerState<_AddSongsSheet> createState() => _AddSongsSheetState();
@@ -677,15 +658,15 @@ class _AddSongsSheetState extends ConsumerState<_AddSongsSheet> {
   Widget build(BuildContext context) {
     final allSongs = ref.watch(localSongsProvider);
     final playlistSongIds = widget.playlist.songs.map((s) => s.id).toSet();
-    
+
     // Filter out songs already in playlist and apply search
     final availableSongs = allSongs.where((song) {
       if (playlistSongIds.contains(song.id)) return false;
       if (_searchQuery.isEmpty) return true;
       final query = _searchQuery.toLowerCase();
       return song.title.toLowerCase().contains(query) ||
-             song.artist.toLowerCase().contains(query) ||
-             song.album.toLowerCase().contains(query);
+          song.artist.toLowerCase().contains(query) ||
+          song.album.toLowerCase().contains(query);
     }).toList();
 
     return ClipRRect(
@@ -695,7 +676,7 @@ class _AddSongsSheetState extends ConsumerState<_AddSongsSheet> {
         child: Container(
           height: MediaQuery.of(context).size.height * 0.8,
           decoration: BoxDecoration(
-            color: AppColors.surfaceDark.withOpacity(0.95),
+            color: AppColors.surfaceDark.withValues(alpha: 0.95),
             borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
           ),
           child: Column(
@@ -705,7 +686,7 @@ class _AddSongsSheetState extends ConsumerState<_AddSongsSheet> {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: AppColors.glassHighlight.withOpacity(0.5),
+                  color: AppColors.glassHighlight.withValues(alpha: 0.5),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -722,7 +703,10 @@ class _AddSongsSheetState extends ConsumerState<_AddSongsSheet> {
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.close, color: AppColors.textSecondaryDark),
+                      icon: const Icon(
+                        Icons.close,
+                        color: AppColors.textSecondaryDark,
+                      ),
                       onPressed: () => Navigator.pop(context),
                     ),
                   ],
@@ -736,15 +720,23 @@ class _AddSongsSheetState extends ConsumerState<_AddSongsSheet> {
                   style: const TextStyle(color: AppColors.textPrimaryDark),
                   decoration: InputDecoration(
                     hintText: 'Search songs...',
-                    hintStyle: TextStyle(color: AppColors.textSecondaryDark.withOpacity(0.5)),
-                    prefixIcon: const Icon(Iconsax.search_normal, color: AppColors.textSecondaryDark),
+                    hintStyle: TextStyle(
+                      color: AppColors.textSecondaryDark.withValues(alpha: 0.5),
+                    ),
+                    prefixIcon: const Icon(
+                      Iconsax.search_normal,
+                      color: AppColors.textSecondaryDark,
+                    ),
                     filled: true,
                     fillColor: AppColors.glassDark,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide.none,
                     ),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
                   ),
                   onChanged: (value) {
                     setState(() {
@@ -773,12 +765,14 @@ class _AddSongsSheetState extends ConsumerState<_AddSongsSheet> {
                             Icon(
                               Iconsax.music,
                               size: 48,
-                              color: AppColors.textSecondaryDark.withOpacity(0.5),
+                              color: AppColors.textSecondaryDark.withValues(
+                                alpha: 0.5,
+                              ),
                             ),
                             const SizedBox(height: 16),
                             Text(
-                              _searchQuery.isEmpty 
-                                  ? 'All songs added to playlist' 
+                              _searchQuery.isEmpty
+                                  ? 'All songs added to playlist'
                                   : 'No songs found',
                               style: AppTextStyles.body.copyWith(
                                 color: AppColors.textSecondaryDark,
@@ -822,10 +816,7 @@ class _AddSongTile extends StatelessWidget {
   final Song song;
   final VoidCallback onAdd;
 
-  const _AddSongTile({
-    required this.song,
-    required this.onAdd,
-  });
+  const _AddSongTile({required this.song, required this.onAdd});
 
   @override
   Widget build(BuildContext context) {
@@ -834,9 +825,7 @@ class _AddSongTile extends StatelessWidget {
       leading: Container(
         width: 48,
         height: 48,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8),
-        ),
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(8)),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(8),
           child: _buildArtwork(),
@@ -844,9 +833,7 @@ class _AddSongTile extends StatelessWidget {
       ),
       title: Text(
         song.title,
-        style: AppTextStyles.body.copyWith(
-          color: AppColors.textPrimaryDark,
-        ),
+        style: AppTextStyles.body.copyWith(color: AppColors.textPrimaryDark),
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
       ),
@@ -859,10 +846,7 @@ class _AddSongTile extends StatelessWidget {
         overflow: TextOverflow.ellipsis,
       ),
       trailing: IconButton(
-        icon: const Icon(
-          Icons.add_circle_outline,
-          color: AppColors.primary,
-        ),
+        icon: const Icon(Icons.add_circle_outline, color: AppColors.primary),
         onPressed: onAdd,
       ),
     );
@@ -892,15 +876,12 @@ class _AddSongTile extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            AppColors.glassDark,
-            AppColors.glassLight,
-          ],
+          colors: [AppColors.glassDark, AppColors.glassLight],
         ),
       ),
       child: Icon(
         Icons.music_note_rounded,
-        color: AppColors.textSecondaryDark.withOpacity(0.5),
+        color: AppColors.textSecondaryDark.withValues(alpha: 0.5),
         size: 20,
       ),
     );

@@ -40,19 +40,14 @@ class AppTheme {
         fontWeight: FontWeight.w600,
         fontFamily: AppTextStyles.fontFamily,
       ),
-      iconTheme: IconThemeData(
-        color: AppColors.primary,
-        size: 24,
-      ),
+      iconTheme: IconThemeData(color: AppColors.primary, size: 24),
     ),
 
     // Card Theme
     cardTheme: CardThemeData(
       color: AppColors.cardDark,
       elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
     ),
 
     // Bottom Navigation Bar Theme
@@ -67,31 +62,29 @@ class AppTheme {
     ),
 
     // Icon Theme
-    iconTheme: const IconThemeData(
-      color: AppColors.textPrimaryDark,
-      size: 24,
-    ),
+    iconTheme: const IconThemeData(color: AppColors.textPrimaryDark, size: 24),
 
     // Text Theme
-    textTheme: const TextTheme(
-      displayLarge: AppTextStyles.largeTitle,
-      displayMedium: AppTextStyles.title1,
-      displaySmall: AppTextStyles.title2,
-      headlineMedium: AppTextStyles.title3,
-      headlineSmall: AppTextStyles.headline,
-      titleLarge: AppTextStyles.headline,
-      titleMedium: AppTextStyles.body,
-      titleSmall: AppTextStyles.callout,
-      bodyLarge: AppTextStyles.body,
-      bodyMedium: AppTextStyles.subhead,
-      bodySmall: AppTextStyles.footnote,
-      labelLarge: AppTextStyles.button,
-      labelMedium: AppTextStyles.caption1,
-      labelSmall: AppTextStyles.caption2,
-    ).apply(
-      bodyColor: AppColors.textPrimaryDark,
-      displayColor: AppColors.textPrimaryDark,
-    ),
+    textTheme:
+        const TextTheme(
+          displayLarge: AppTextStyles.largeTitle,
+          displayMedium: AppTextStyles.title1,
+          displaySmall: AppTextStyles.title2,
+          headlineMedium: AppTextStyles.title3,
+          headlineSmall: AppTextStyles.headline,
+          titleLarge: AppTextStyles.headline,
+          titleMedium: AppTextStyles.body,
+          titleSmall: AppTextStyles.callout,
+          bodyLarge: AppTextStyles.body,
+          bodyMedium: AppTextStyles.subhead,
+          bodySmall: AppTextStyles.footnote,
+          labelLarge: AppTextStyles.button,
+          labelMedium: AppTextStyles.caption1,
+          labelSmall: AppTextStyles.caption2,
+        ).apply(
+          bodyColor: AppColors.textPrimaryDark,
+          displayColor: AppColors.textPrimaryDark,
+        ),
 
     // Divider Theme
     dividerTheme: const DividerThemeData(
@@ -110,7 +103,7 @@ class AppTheme {
       activeTrackColor: AppColors.sliderActive,
       inactiveTrackColor: AppColors.sliderInactive,
       thumbColor: AppColors.sliderActive,
-      overlayColor: AppColors.sliderActive.withOpacity(0.2),
+      overlayColor: AppColors.sliderActive.withValues(alpha: 0.2),
       trackHeight: 3,
       thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
       overlayShape: const RoundSliderOverlayShape(overlayRadius: 12),
@@ -127,9 +120,7 @@ class AppTheme {
     // Dialog Theme
     dialogTheme: DialogThemeData(
       backgroundColor: AppColors.surfaceDark,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(14),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
     ),
 
     // Snackbar Theme
@@ -139,9 +130,7 @@ class AppTheme {
         color: AppColors.textPrimaryDark,
       ),
       behavior: SnackBarBehavior.floating,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
     ),
 
     // Input Decoration Theme
@@ -171,9 +160,7 @@ class AppTheme {
       style: ElevatedButton.styleFrom(
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         textStyle: AppTextStyles.button,
       ),
@@ -221,19 +208,14 @@ class AppTheme {
         fontWeight: FontWeight.w600,
         fontFamily: AppTextStyles.fontFamily,
       ),
-      iconTheme: IconThemeData(
-        color: AppColors.primary,
-        size: 24,
-      ),
+      iconTheme: IconThemeData(color: AppColors.primary, size: 24),
     ),
 
     // Card Theme
     cardTheme: CardThemeData(
       color: AppColors.cardLight,
       elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
     ),
 
     // Bottom Navigation Bar Theme
@@ -248,25 +230,26 @@ class AppTheme {
     ),
 
     // Text Theme
-    textTheme: const TextTheme(
-      displayLarge: AppTextStyles.largeTitle,
-      displayMedium: AppTextStyles.title1,
-      displaySmall: AppTextStyles.title2,
-      headlineMedium: AppTextStyles.title3,
-      headlineSmall: AppTextStyles.headline,
-      titleLarge: AppTextStyles.headline,
-      titleMedium: AppTextStyles.body,
-      titleSmall: AppTextStyles.callout,
-      bodyLarge: AppTextStyles.body,
-      bodyMedium: AppTextStyles.subhead,
-      bodySmall: AppTextStyles.footnote,
-      labelLarge: AppTextStyles.button,
-      labelMedium: AppTextStyles.caption1,
-      labelSmall: AppTextStyles.caption2,
-    ).apply(
-      bodyColor: AppColors.textPrimaryLight,
-      displayColor: AppColors.textPrimaryLight,
-    ),
+    textTheme:
+        const TextTheme(
+          displayLarge: AppTextStyles.largeTitle,
+          displayMedium: AppTextStyles.title1,
+          displaySmall: AppTextStyles.title2,
+          headlineMedium: AppTextStyles.title3,
+          headlineSmall: AppTextStyles.headline,
+          titleLarge: AppTextStyles.headline,
+          titleMedium: AppTextStyles.body,
+          titleSmall: AppTextStyles.callout,
+          bodyLarge: AppTextStyles.body,
+          bodyMedium: AppTextStyles.subhead,
+          bodySmall: AppTextStyles.footnote,
+          labelLarge: AppTextStyles.button,
+          labelMedium: AppTextStyles.caption1,
+          labelSmall: AppTextStyles.caption2,
+        ).apply(
+          bodyColor: AppColors.textPrimaryLight,
+          displayColor: AppColors.textPrimaryLight,
+        ),
 
     // Divider Theme
     dividerTheme: const DividerThemeData(

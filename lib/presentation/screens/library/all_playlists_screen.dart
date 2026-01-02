@@ -77,7 +77,7 @@ class AllPlaylistsScreen extends ConsumerWidget {
                     Icon(
                       Iconsax.music_playlist,
                       size: 64,
-                      color: AppColors.textSecondaryDark.withOpacity(0.5),
+                      color: AppColors.textSecondaryDark.withValues(alpha: 0.5),
                     ),
                     const SizedBox(height: 16),
                     Text(
@@ -90,7 +90,9 @@ class AllPlaylistsScreen extends ConsumerWidget {
                     Text(
                       'Create a playlist to organize your music',
                       style: AppTextStyles.subhead.copyWith(
-                        color: AppColors.textSecondaryDark.withOpacity(0.7),
+                        color: AppColors.textSecondaryDark.withValues(
+                          alpha: 0.7,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 24),
@@ -101,7 +103,10 @@ class AllPlaylistsScreen extends ConsumerWidget {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12,
+                        ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -113,24 +118,21 @@ class AllPlaylistsScreen extends ConsumerWidget {
             )
           else
             SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  final playlist = playlists[index];
-                  return _PlaylistListItem(
-                    playlist: playlist,
-                    onTap: () => context.push('/playlist/${playlist.id}', extra: playlist),
-                    onEdit: () => _showEditPlaylistDialog(context, ref, playlist),
-                    onDelete: () => _showDeleteConfirmation(context, ref, playlist),
-                  );
-                },
-                childCount: playlists.length,
-              ),
+              delegate: SliverChildBuilderDelegate((context, index) {
+                final playlist = playlists[index];
+                return _PlaylistListItem(
+                  playlist: playlist,
+                  onTap: () =>
+                      context.push('/playlist/${playlist.id}', extra: playlist),
+                  onEdit: () => _showEditPlaylistDialog(context, ref, playlist),
+                  onDelete: () =>
+                      _showDeleteConfirmation(context, ref, playlist),
+                );
+              }, childCount: playlists.length),
             ),
 
           // Bottom padding for mini player
-          const SliverToBoxAdapter(
-            child: SizedBox(height: 160),
-          ),
+          const SliverToBoxAdapter(child: SizedBox(height: 160)),
         ],
       ),
     );
@@ -159,7 +161,9 @@ class AllPlaylistsScreen extends ConsumerWidget {
               style: const TextStyle(color: AppColors.textPrimaryDark),
               decoration: InputDecoration(
                 hintText: 'Playlist name',
-                hintStyle: TextStyle(color: AppColors.textSecondaryDark.withOpacity(0.5)),
+                hintStyle: TextStyle(
+                  color: AppColors.textSecondaryDark.withValues(alpha: 0.5),
+                ),
                 enabledBorder: OutlineInputBorder(
                   borderSide: BorderSide(color: AppColors.dividerDark),
                   borderRadius: BorderRadius.circular(8),
@@ -177,7 +181,9 @@ class AllPlaylistsScreen extends ConsumerWidget {
               maxLines: 2,
               decoration: InputDecoration(
                 hintText: 'Description (optional)',
-                hintStyle: TextStyle(color: AppColors.textSecondaryDark.withOpacity(0.5)),
+                hintStyle: TextStyle(
+                  color: AppColors.textSecondaryDark.withValues(alpha: 0.5),
+                ),
                 enabledBorder: OutlineInputBorder(
                   borderSide: BorderSide(color: AppColors.dividerDark),
                   borderRadius: BorderRadius.circular(8),
@@ -201,12 +207,14 @@ class AllPlaylistsScreen extends ConsumerWidget {
           TextButton(
             onPressed: () {
               if (nameController.text.isNotEmpty) {
-                ref.read(playlistsProvider.notifier).createPlaylist(
-                  nameController.text,
-                  description: descriptionController.text.isNotEmpty 
-                      ? descriptionController.text 
-                      : null,
-                );
+                ref
+                    .read(playlistsProvider.notifier)
+                    .createPlaylist(
+                      nameController.text,
+                      description: descriptionController.text.isNotEmpty
+                          ? descriptionController.text
+                          : null,
+                    );
                 Navigator.pop(context);
               }
             },
@@ -217,9 +225,15 @@ class AllPlaylistsScreen extends ConsumerWidget {
     );
   }
 
-  void _showEditPlaylistDialog(BuildContext context, WidgetRef ref, Playlist playlist) {
+  void _showEditPlaylistDialog(
+    BuildContext context,
+    WidgetRef ref,
+    Playlist playlist,
+  ) {
     final nameController = TextEditingController(text: playlist.name);
-    final descriptionController = TextEditingController(text: playlist.description ?? '');
+    final descriptionController = TextEditingController(
+      text: playlist.description ?? '',
+    );
 
     showDialog(
       context: context,
@@ -240,7 +254,9 @@ class AllPlaylistsScreen extends ConsumerWidget {
               style: const TextStyle(color: AppColors.textPrimaryDark),
               decoration: InputDecoration(
                 hintText: 'Playlist name',
-                hintStyle: TextStyle(color: AppColors.textSecondaryDark.withOpacity(0.5)),
+                hintStyle: TextStyle(
+                  color: AppColors.textSecondaryDark.withValues(alpha: 0.5),
+                ),
                 enabledBorder: OutlineInputBorder(
                   borderSide: BorderSide(color: AppColors.dividerDark),
                   borderRadius: BorderRadius.circular(8),
@@ -258,7 +274,9 @@ class AllPlaylistsScreen extends ConsumerWidget {
               maxLines: 2,
               decoration: InputDecoration(
                 hintText: 'Description (optional)',
-                hintStyle: TextStyle(color: AppColors.textSecondaryDark.withOpacity(0.5)),
+                hintStyle: TextStyle(
+                  color: AppColors.textSecondaryDark.withValues(alpha: 0.5),
+                ),
                 enabledBorder: OutlineInputBorder(
                   borderSide: BorderSide(color: AppColors.dividerDark),
                   borderRadius: BorderRadius.circular(8),
@@ -282,13 +300,15 @@ class AllPlaylistsScreen extends ConsumerWidget {
           TextButton(
             onPressed: () {
               if (nameController.text.isNotEmpty) {
-                ref.read(playlistsProvider.notifier).updatePlaylist(
-                  playlist.id,
-                  name: nameController.text,
-                  description: descriptionController.text.isNotEmpty 
-                      ? descriptionController.text 
-                      : null,
-                );
+                ref
+                    .read(playlistsProvider.notifier)
+                    .updatePlaylist(
+                      playlist.id,
+                      name: nameController.text,
+                      description: descriptionController.text.isNotEmpty
+                          ? descriptionController.text
+                          : null,
+                    );
                 Navigator.pop(context);
               }
             },
@@ -299,7 +319,11 @@ class AllPlaylistsScreen extends ConsumerWidget {
     );
   }
 
-  void _showDeleteConfirmation(BuildContext context, WidgetRef ref, Playlist playlist) {
+  void _showDeleteConfirmation(
+    BuildContext context,
+    WidgetRef ref,
+    Playlist playlist,
+  ) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -336,10 +360,7 @@ class AllPlaylistsScreen extends ConsumerWidget {
                 ),
               );
             },
-            child: const Text(
-              'Delete',
-              style: TextStyle(color: Colors.red),
-            ),
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -374,7 +395,7 @@ class _PlaylistListItem extends StatelessWidget {
           borderRadius: BorderRadius.circular(8),
           boxShadow: [
             BoxShadow(
-              color: AppColors.shadowDark.withOpacity(0.3),
+              color: AppColors.shadowDark.withValues(alpha: 0.3),
               blurRadius: 8,
               offset: const Offset(0, 4),
               spreadRadius: -2,
@@ -417,8 +438,10 @@ class _PlaylistListItem extends StatelessWidget {
           filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
           child: Container(
             decoration: BoxDecoration(
-              color: AppColors.surfaceDark.withOpacity(0.95),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+              color: AppColors.surfaceDark.withValues(alpha: 0.95),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(20),
+              ),
             ),
             child: SafeArea(
               child: Column(
@@ -429,7 +452,7 @@ class _PlaylistListItem extends StatelessWidget {
                     width: 40,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: AppColors.glassHighlight.withOpacity(0.5),
+                      color: AppColors.glassHighlight.withValues(alpha: 0.5),
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -480,10 +503,15 @@ class _PlaylistListItem extends StatelessWidget {
                   const Divider(color: AppColors.dividerDark, height: 1),
                   // Options
                   ListTile(
-                    leading: const Icon(Iconsax.edit, color: AppColors.textPrimaryDark),
+                    leading: const Icon(
+                      Iconsax.edit,
+                      color: AppColors.textPrimaryDark,
+                    ),
                     title: Text(
                       'Edit Playlist',
-                      style: AppTextStyles.body.copyWith(color: AppColors.textPrimaryDark),
+                      style: AppTextStyles.body.copyWith(
+                        color: AppColors.textPrimaryDark,
+                      ),
                     ),
                     onTap: () {
                       Navigator.pop(context);
@@ -528,7 +556,7 @@ class _PlaylistListItem extends StatelessWidget {
         }
       }
     }
-    
+
     return _buildPlaceholder();
   }
 
@@ -541,14 +569,14 @@ class _PlaylistListItem extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            AppColors.primary.withOpacity(0.3),
-            AppColors.primaryDark.withOpacity(0.5),
+            AppColors.primary.withValues(alpha: 0.3),
+            AppColors.primaryDark.withValues(alpha: 0.5),
           ],
         ),
       ),
       child: Icon(
         Iconsax.music_playlist,
-        color: AppColors.textPrimaryDark.withOpacity(0.7),
+        color: AppColors.textPrimaryDark.withValues(alpha: 0.7),
         size: 28,
       ),
     );

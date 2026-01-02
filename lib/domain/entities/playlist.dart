@@ -89,28 +89,22 @@ class Playlist extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        name,
-        description,
-        artworkUrl,
-        creatorId,
-        creatorName,
-        songs,
-        songCount,
-        totalDuration,
-        isPublic,
-        isEditable,
-        createdAt,
-        updatedAt,
-        type,
-      ];
+    id,
+    name,
+    description,
+    artworkUrl,
+    creatorId,
+    creatorName,
+    songs,
+    songCount,
+    totalDuration,
+    isPublic,
+    isEditable,
+    createdAt,
+    updatedAt,
+    type,
+  ];
 }
 
 /// Type of playlist
-enum PlaylistType {
-  userCreated,
-  favorites,
-  recentlyPlayed,
-  curated,
-  radio,
-}
+enum PlaylistType { userCreated, favorites, recentlyPlayed, curated, radio }

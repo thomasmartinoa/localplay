@@ -42,18 +42,23 @@ class SearchState {
     );
   }
 
-  bool get hasResults => 
-    songs.isNotEmpty || albums.isNotEmpty || artists.isNotEmpty || playlists.isNotEmpty;
+  bool get hasResults =>
+      songs.isNotEmpty ||
+      albums.isNotEmpty ||
+      artists.isNotEmpty ||
+      playlists.isNotEmpty;
 }
 
 /// Search provider that searches local music
-final searchProvider = StateNotifierProvider<SearchNotifier, SearchState>((ref) {
+final searchProvider = StateNotifierProvider<SearchNotifier, SearchState>((
+  ref,
+) {
   return SearchNotifier(ref);
 });
 
 class SearchNotifier extends StateNotifier<SearchState> {
   final Ref _ref;
-  
+
   SearchNotifier(this._ref) : super(const SearchState());
 
   void setQuery(String query) {
@@ -67,31 +72,37 @@ class SearchNotifier extends StateNotifier<SearchState> {
 
   Future<void> _performSearch(String query) async {
     state = state.copyWith(isLoading: true, error: null);
-    
+
     try {
       final lowerQuery = query.toLowerCase();
-      
+
       // Search local songs
       final allSongs = _ref.read(localSongsProvider);
-      final matchingSongs = allSongs.where((song) =>
-        song.title.toLowerCase().contains(lowerQuery) ||
-        song.artist.toLowerCase().contains(lowerQuery) ||
-        song.album.toLowerCase().contains(lowerQuery)
-      ).toList();
-      
-      // Search local albums  
+      final matchingSongs = allSongs
+          .where(
+            (song) =>
+                song.title.toLowerCase().contains(lowerQuery) ||
+                song.artist.toLowerCase().contains(lowerQuery) ||
+                song.album.toLowerCase().contains(lowerQuery),
+          )
+          .toList();
+
+      // Search local albums
       final allAlbums = _ref.read(localAlbumsProvider);
-      final matchingAlbums = allAlbums.where((album) =>
-        album.title.toLowerCase().contains(lowerQuery) ||
-        album.artist.toLowerCase().contains(lowerQuery)
-      ).toList();
-      
+      final matchingAlbums = allAlbums
+          .where(
+            (album) =>
+                album.title.toLowerCase().contains(lowerQuery) ||
+                album.artist.toLowerCase().contains(lowerQuery),
+          )
+          .toList();
+
       // Search local artists
       final allArtists = _ref.read(localArtistsProvider);
-      final matchingArtists = allArtists.where((artist) =>
-        artist.name.toLowerCase().contains(lowerQuery)
-      ).toList();
-      
+      final matchingArtists = allArtists
+          .where((artist) => artist.name.toLowerCase().contains(lowerQuery))
+          .toList();
+
       state = state.copyWith(
         isLoading: false,
         songs: matchingSongs,
@@ -99,10 +110,7 @@ class SearchNotifier extends StateNotifier<SearchState> {
         artists: matchingArtists,
       );
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 
@@ -112,9 +120,10 @@ class SearchNotifier extends StateNotifier<SearchState> {
 }
 
 /// Search history provider
-final searchHistoryProvider = StateNotifierProvider<SearchHistoryNotifier, List<String>>((ref) {
-  return SearchHistoryNotifier();
-});
+final searchHistoryProvider =
+    StateNotifierProvider<SearchHistoryNotifier, List<String>>((ref) {
+      return SearchHistoryNotifier();
+    });
 
 class SearchHistoryNotifier extends StateNotifier<List<String>> {
   static const int maxHistory = 20;
@@ -123,14 +132,14 @@ class SearchHistoryNotifier extends StateNotifier<List<String>> {
 
   void addToHistory(String query) {
     if (query.isEmpty) return;
-    
+
     final newState = state.where((q) => q != query).toList();
     newState.insert(0, query);
-    
+
     if (newState.length > maxHistory) {
       newState.removeLast();
     }
-    
+
     state = newState;
   }
 

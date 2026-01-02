@@ -22,7 +22,7 @@ class HomeScreen extends ConsumerWidget {
     final recentlyAdded = ref.watch(recentlyAddedSongsProvider);
 
     final statusBarHeight = MediaQuery.of(context).padding.top;
-    
+
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: Stack(
@@ -32,9 +32,7 @@ class HomeScreen extends ConsumerWidget {
             physics: const BouncingScrollPhysics(),
             slivers: [
               // Space for the floating header
-              SliverToBoxAdapter(
-                child: SizedBox(height: statusBarHeight + 60),
-              ),
+              SliverToBoxAdapter(child: SizedBox(height: statusBarHeight + 60)),
 
               // Empty state if no music
               if (localSongs.isEmpty)
@@ -63,10 +61,7 @@ class HomeScreen extends ConsumerWidget {
                           final album = localAlbums[index];
                           return Padding(
                             padding: const EdgeInsets.only(right: 16),
-                            child: AlbumCard(
-                              album: album,
-                              size: 180,
-                            ),
+                            child: AlbumCard(album: album, size: 180),
                           );
                         },
                       ),
@@ -90,13 +85,13 @@ class HomeScreen extends ConsumerWidget {
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                         colors: [
-                          AppColors.glassDark.withOpacity(0.6),
-                          AppColors.glassLight.withOpacity(0.4),
+                          AppColors.glassDark.withValues(alpha: 0.6),
+                          AppColors.glassLight.withValues(alpha: 0.4),
                         ],
                       ),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                        color: AppColors.glassBorder.withOpacity(0.2),
+                        color: AppColors.glassBorder.withValues(alpha: 0.2),
                         width: 1,
                       ),
                     ),
@@ -111,7 +106,12 @@ class HomeScreen extends ConsumerWidget {
                               final song = recentlyAdded[index];
                               return SongTile(
                                 song: song,
-                                onTap: () => _playSong(context, ref, song, recentlyAdded),
+                                onTap: () => _playSong(
+                                  context,
+                                  ref,
+                                  song,
+                                  recentlyAdded,
+                                ),
                               );
                             },
                           ),
@@ -123,12 +123,10 @@ class HomeScreen extends ConsumerWidget {
               ],
 
               // Bottom padding for mini player and nav bar
-              const SliverToBoxAdapter(
-                child: SizedBox(height: 180),
-              ),
+              const SliverToBoxAdapter(child: SizedBox(height: 180)),
             ],
           ),
-          
+
           // Floating header with smooth gradient fade
           Positioned(
             top: 0,
@@ -144,9 +142,9 @@ class HomeScreen extends ConsumerWidget {
                     colors: [
                       AppColors.backgroundGradientStart,
                       AppColors.backgroundGradientStart,
-                      AppColors.backgroundGradientStart.withOpacity(0.95),
-                      AppColors.backgroundGradientStart.withOpacity(0.7),
-                      AppColors.backgroundGradientStart.withOpacity(0.3),
+                      AppColors.backgroundGradientStart.withValues(alpha: 0.95),
+                      AppColors.backgroundGradientStart.withValues(alpha: 0.7),
+                      AppColors.backgroundGradientStart.withValues(alpha: 0.3),
                       Colors.transparent,
                     ],
                     stops: const [0.0, 0.3, 0.5, 0.7, 0.85, 1.0],
@@ -155,7 +153,7 @@ class HomeScreen extends ConsumerWidget {
               ),
             ),
           ),
-          
+
           // Title text on top of gradient
           Positioned(
             top: statusBarHeight + 8,
@@ -186,8 +184,8 @@ class HomeScreen extends ConsumerWidget {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  AppColors.primary.withOpacity(0.3),
-                  AppColors.primaryDark.withOpacity(0.2),
+                  AppColors.primary.withValues(alpha: 0.3),
+                  AppColors.primaryDark.withValues(alpha: 0.2),
                 ],
               ),
               shape: BoxShape.circle,
@@ -227,7 +225,7 @@ class HomeScreen extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(14),
               ),
               elevation: 8,
-              shadowColor: AppColors.primary.withOpacity(0.4),
+              shadowColor: AppColors.primary.withValues(alpha: 0.4),
             ),
           ),
         ],
@@ -235,7 +233,12 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  void _playSong(BuildContext context, WidgetRef ref, dynamic song, List<dynamic> queue) {
+  void _playSong(
+    BuildContext context,
+    WidgetRef ref,
+    dynamic song,
+    List<dynamic> queue,
+  ) {
     final audioService = ref.read(audioPlayerServiceProvider);
     final songIndex = queue.indexOf(song);
     audioService.playQueue(queue.cast(), startIndex: songIndex);

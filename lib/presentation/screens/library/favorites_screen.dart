@@ -43,7 +43,7 @@ class FavoritesScreen extends ConsumerWidget {
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      AppColors.accentPink.withOpacity(0.4),
+                      AppColors.accentPink.withValues(alpha: 0.4),
                       AppColors.backgroundDark,
                     ],
                   ),
@@ -54,7 +54,7 @@ class FavoritesScreen extends ConsumerWidget {
                     child: Icon(
                       Icons.favorite_rounded,
                       size: 80,
-                      color: AppColors.accentPink.withOpacity(0.6),
+                      color: AppColors.accentPink.withValues(alpha: 0.6),
                     ),
                   ),
                 ),
@@ -92,7 +92,10 @@ class FavoritesScreen extends ConsumerWidget {
                     onPressed: favorites.isNotEmpty
                         ? () => audioService.playQueue(favorites)
                         : null,
-                    icon: const Icon(Iconsax.play_circle, color: AppColors.primary),
+                    icon: const Icon(
+                      Iconsax.play_circle,
+                      color: AppColors.primary,
+                    ),
                     tooltip: 'Play All',
                   ),
                 ],
@@ -115,7 +118,7 @@ class FavoritesScreen extends ConsumerWidget {
                     Icon(
                       Icons.favorite_border_rounded,
                       size: 64,
-                      color: AppColors.textSecondaryDark.withOpacity(0.5),
+                      color: AppColors.textSecondaryDark.withValues(alpha: 0.5),
                     ),
                     const SizedBox(height: 16),
                     Text(
@@ -128,7 +131,9 @@ class FavoritesScreen extends ConsumerWidget {
                     Text(
                       'Songs you like will appear here',
                       style: AppTextStyles.subhead.copyWith(
-                        color: AppColors.textSecondaryDark.withOpacity(0.7),
+                        color: AppColors.textSecondaryDark.withValues(
+                          alpha: 0.7,
+                        ),
                       ),
                     ),
                   ],
@@ -137,52 +142,52 @@ class FavoritesScreen extends ConsumerWidget {
             )
           else
             SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  final song = favorites[index];
-                  return Dismissible(
-                    key: Key('favorite_${song.id}'),
-                    direction: DismissDirection.endToStart,
-                    background: Container(
-                      color: AppColors.accentPink.withOpacity(0.3),
-                      alignment: Alignment.centerRight,
-                      padding: const EdgeInsets.only(right: 20),
-                      child: const Icon(
-                        Icons.heart_broken_rounded,
-                        color: AppColors.accentPink,
-                      ),
+              delegate: SliverChildBuilderDelegate((context, index) {
+                final song = favorites[index];
+                return Dismissible(
+                  key: Key('favorite_${song.id}'),
+                  direction: DismissDirection.endToStart,
+                  background: Container(
+                    color: AppColors.accentPink.withValues(alpha: 0.3),
+                    alignment: Alignment.centerRight,
+                    padding: const EdgeInsets.only(right: 20),
+                    child: const Icon(
+                      Icons.heart_broken_rounded,
+                      color: AppColors.accentPink,
                     ),
-                    onDismissed: (_) {
-                      ref.read(favoriteSongsProvider.notifier).removeFromFavorites(song.id);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Removed ${song.title} from favorites'),
-                          behavior: SnackBarBehavior.floating,
-                          backgroundColor: AppColors.glassDark,
-                          action: SnackBarAction(
-                            label: 'Undo',
-                            textColor: AppColors.primary,
-                            onPressed: () {
-                              ref.read(favoriteSongsProvider.notifier).addToFavorites(song);
-                            },
-                          ),
+                  ),
+                  onDismissed: (_) {
+                    ref
+                        .read(favoriteSongsProvider.notifier)
+                        .removeFromFavorites(song.id);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Removed ${song.title} from favorites'),
+                        behavior: SnackBarBehavior.floating,
+                        backgroundColor: AppColors.glassDark,
+                        action: SnackBarAction(
+                          label: 'Undo',
+                          textColor: AppColors.primary,
+                          onPressed: () {
+                            ref
+                                .read(favoriteSongsProvider.notifier)
+                                .addToFavorites(song);
+                          },
                         ),
-                      );
-                    },
-                    child: SongTile(
-                      song: song,
-                      onTap: () => audioService.playQueue(favorites, startIndex: index),
-                    ),
-                  );
-                },
-                childCount: favorites.length,
-              ),
+                      ),
+                    );
+                  },
+                  child: SongTile(
+                    song: song,
+                    onTap: () =>
+                        audioService.playQueue(favorites, startIndex: index),
+                  ),
+                );
+              }, childCount: favorites.length),
             ),
 
           // Bottom padding for mini player
-          const SliverToBoxAdapter(
-            child: SizedBox(height: 160),
-          ),
+          const SliverToBoxAdapter(child: SizedBox(height: 160)),
         ],
       ),
     );

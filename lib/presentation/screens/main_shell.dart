@@ -27,7 +27,7 @@ class _MainShellState extends ConsumerState<MainShell> {
       data: (state) => state.currentSong != null,
       orElse: () => false,
     );
-    
+
     // Get safe area bottom padding
     final bottomPadding = MediaQuery.of(context).padding.bottom;
     // Nav bar height + bottom padding + margin
@@ -53,9 +53,7 @@ class _MainShellState extends ConsumerState<MainShell> {
           body: Stack(
             children: [
               // Main content - extends behind nav bar for glass effect
-              Positioned.fill(
-                child: widget.child,
-              ),
+              Positioned.fill(child: widget.child),
               // Floating Mini Player (positioned correctly above nav bar)
               if (hasCurrentSong)
                 Positioned(
@@ -80,7 +78,7 @@ class _MainShellState extends ConsumerState<MainShell> {
 
   Widget _buildFloatingNavBar(BuildContext context) {
     const iconColor = Colors.white;
-    final inactiveIconColor = Colors.white.withOpacity(0.5);
+    final inactiveIconColor = Colors.white.withValues(alpha: 0.5);
 
     return SafeArea(
       top: false,
@@ -139,10 +137,7 @@ class _MainShellState extends ConsumerState<MainShell> {
     );
   }
 
-  Widget _buildSearchButton(
-    BuildContext context,
-    Color iconColor,
-  ) {
+  Widget _buildSearchButton(BuildContext context, Color iconColor) {
     final isActive = _currentIndex == 2;
 
     return GestureDetector(
@@ -178,9 +173,9 @@ class _MainShellState extends ConsumerState<MainShell> {
     bool isDisabled = false,
   }) {
     final isActive = _currentIndex == index && !isDisabled;
-    
+
     // Active background color - subtle highlight
-    final activeBackgroundColor = Colors.white.withOpacity(0.15);
+    final activeBackgroundColor = Colors.white.withValues(alpha: 0.15);
 
     return GestureDetector(
       onTap: isDisabled
@@ -207,10 +202,10 @@ class _MainShellState extends ConsumerState<MainShell> {
               child: Icon(
                 icon,
                 color: isDisabled
-                    ? inactiveColor.withOpacity(0.3)
+                    ? inactiveColor.withValues(alpha: 0.3)
                     : isActive
-                        ? AppColors.primary
-                        : iconColor,
+                    ? AppColors.primary
+                    : iconColor,
                 size: 22,
               ),
             ),
@@ -222,10 +217,10 @@ class _MainShellState extends ConsumerState<MainShell> {
                 fontSize: 9,
                 fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
                 color: isDisabled
-                    ? inactiveColor.withOpacity(0.3)
+                    ? inactiveColor.withValues(alpha: 0.3)
                     : isActive
-                        ? AppColors.primary
-                        : iconColor,
+                    ? AppColors.primary
+                    : iconColor,
               ),
             ),
           ],

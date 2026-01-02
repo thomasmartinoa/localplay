@@ -4,6 +4,7 @@ import 'package:rxdart/rxdart.dart';
 import 'package:audio_session/audio_session.dart';
 import '../../domain/entities/song.dart';
 import '../../data/models/player_state.dart';
+import '../../core/utils/app_logger.dart';
 
 /// Audio player service using just_audio for playback
 class AudioPlayerService {
@@ -16,9 +17,11 @@ class AudioPlayerService {
   RepeatMode _repeatMode = RepeatMode.off;
   List<int>? _shuffleIndices;
 
-  AudioPlayerService() 
-      : _player = AudioPlayer(),
-        _stateSubject = BehaviorSubject<PlayerState>.seeded(PlayerState.initial()) {
+  AudioPlayerService()
+    : _player = AudioPlayer(),
+      _stateSubject = BehaviorSubject<PlayerState>.seeded(
+        PlayerState.initial(),
+      ) {
     _init();
   }
 
@@ -74,25 +77,28 @@ class AudioPlayerService {
   /// Update the state stream
   void _updateState() {
     final processingState = _player.processingState;
-    
-    _stateSubject.add(PlayerState(
-      currentSong: currentSong,
-      queue: _queue,
-      currentIndex: _currentIndex,
-      position: _player.position,
-      bufferedPosition: _player.bufferedPosition,
-      duration: _player.duration ?? Duration.zero,
-      isPlaying: _player.playing,
-      isBuffering: processingState == ProcessingState.buffering ||
-          processingState == ProcessingState.loading,
-      isCompleted: processingState == ProcessingState.completed,
-      volume: _player.volume,
-      speed: _player.speed,
-      repeatMode: _repeatMode,
-      shuffleEnabled: _shuffleEnabled,
-      hasNext: _hasNext(),
-      hasPrevious: _hasPrevious(),
-    ));
+
+    _stateSubject.add(
+      PlayerState(
+        currentSong: currentSong,
+        queue: _queue,
+        currentIndex: _currentIndex,
+        position: _player.position,
+        bufferedPosition: _player.bufferedPosition,
+        duration: _player.duration ?? Duration.zero,
+        isPlaying: _player.playing,
+        isBuffering:
+            processingState == ProcessingState.buffering ||
+            processingState == ProcessingState.loading,
+        isCompleted: processingState == ProcessingState.completed,
+        volume: _player.volume,
+        speed: _player.speed,
+        repeatMode: _repeatMode,
+        shuffleEnabled: _shuffleEnabled,
+        hasNext: _hasNext(),
+        hasPrevious: _hasPrevious(),
+      ),
+    );
   }
 
   /// Handle song completion
@@ -144,7 +150,7 @@ class AudioPlayerService {
 
     _queue = List.from(songs);
     _currentIndex = startIndex.clamp(0, songs.length - 1);
-    
+
     if (_shuffleEnabled) {
       _generateShuffleIndices();
     }
@@ -165,13 +171,13 @@ class AudioPlayerService {
       } else if (song.audioUrl != null) {
         await _player.setUrl(song.audioUrl!);
       } else {
-        print('No audio source available for song: ${song.title}');
+        AppLogger.warning('No audio source available for song: ${song.title}');
         return;
       }
       _updateState();
     } catch (e) {
       // Handle error - maybe the file or URL is invalid
-      print('Error loading song: $e');
+      AppLogger.error('loading song: $e');
     }
   }
 
@@ -214,7 +220,9 @@ class AudioPlayerService {
   }
 
   /// Skip forward by duration
-  Future<void> seekForward([Duration duration = const Duration(seconds: 10)]) async {
+  Future<void> seekForward([
+    Duration duration = const Duration(seconds: 10),
+  ]) async {
     final currentPosition = _player.position;
     final maxDuration = _player.duration ?? Duration.zero;
     final newPosition = currentPosition + duration;
@@ -222,7 +230,9 @@ class AudioPlayerService {
   }
 
   /// Skip backward by duration
-  Future<void> seekBackward([Duration duration = const Duration(seconds: 10)]) async {
+  Future<void> seekBackward([
+    Duration duration = const Duration(seconds: 10),
+  ]) async {
     final currentPosition = _player.position;
     final newPosition = currentPosition - duration;
     await seekTo(newPosition < Duration.zero ? Duration.zero : newPosition);
@@ -362,18 +372,18 @@ class AudioPlayerService {
   /// Remove song from queue
   void removeFromQueue(int index) {
     if (index < 0 || index >= _queue.length) return;
-    
+
     _queue.removeAt(index);
     if (_shuffleEnabled) {
       _shuffleIndices?.remove(index);
     }
-    
+
     if (index < _currentIndex) {
       _currentIndex--;
     } else if (index == _currentIndex && _queue.isNotEmpty) {
       _loadCurrentSong();
     }
-    
+
     _updateState();
   }
 

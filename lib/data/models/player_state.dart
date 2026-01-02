@@ -112,27 +112,23 @@ class PlayerState extends Equatable {
 
   @override
   List<Object?> get props => [
-        currentSong,
-        queue,
-        currentIndex,
-        position,
-        bufferedPosition,
-        duration,
-        isPlaying,
-        isBuffering,
-        isCompleted,
-        volume,
-        speed,
-        repeatMode,
-        shuffleEnabled,
-        hasNext,
-        hasPrevious,
-      ];
+    currentSong,
+    queue,
+    currentIndex,
+    position,
+    bufferedPosition,
+    duration,
+    isPlaying,
+    isBuffering,
+    isCompleted,
+    volume,
+    speed,
+    repeatMode,
+    shuffleEnabled,
+    hasNext,
+    hasPrevious,
+  ];
 }
 
 /// Repeat mode options
-enum RepeatMode {
-  off,
-  all,
-  one,
-}
+enum RepeatMode { off, all, one }

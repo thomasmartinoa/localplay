@@ -21,27 +21,42 @@ enum GenreSongSortOption {
 }
 
 /// Provider for genre song sort option
-final genreSongSortOptionProvider = StateProvider<GenreSongSortOption>((ref) => GenreSongSortOption.title);
+final genreSongSortOptionProvider = StateProvider<GenreSongSortOption>(
+  (ref) => GenreSongSortOption.title,
+);
 
 /// Provider for sorted songs within a genre
-final sortedGenreSongsProvider = Provider.family<List<Song>, String>((ref, genre) {
+final sortedGenreSongsProvider = Provider.family<List<Song>, String>((
+  ref,
+  genre,
+) {
   final songs = ref.watch(songsByGenreProvider(genre));
   final sortOption = ref.watch(genreSongSortOptionProvider);
-  
+
   final sortedSongs = List<Song>.from(songs);
   switch (sortOption) {
     case GenreSongSortOption.title:
-      sortedSongs.sort((a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()));
+      sortedSongs.sort(
+        (a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()),
+      );
     case GenreSongSortOption.artist:
-      sortedSongs.sort((a, b) => a.artist.toLowerCase().compareTo(b.artist.toLowerCase()));
+      sortedSongs.sort(
+        (a, b) => a.artist.toLowerCase().compareTo(b.artist.toLowerCase()),
+      );
     case GenreSongSortOption.album:
-      sortedSongs.sort((a, b) => a.album.toLowerCase().compareTo(b.album.toLowerCase()));
+      sortedSongs.sort(
+        (a, b) => a.album.toLowerCase().compareTo(b.album.toLowerCase()),
+      );
     case GenreSongSortOption.dateAdded:
-      sortedSongs.sort((a, b) => (b.dateAdded ?? DateTime(1970)).compareTo(a.dateAdded ?? DateTime(1970)));
+      sortedSongs.sort(
+        (a, b) => (b.dateAdded ?? DateTime(1970)).compareTo(
+          a.dateAdded ?? DateTime(1970),
+        ),
+      );
     case GenreSongSortOption.duration:
       sortedSongs.sort((a, b) => b.duration.compareTo(a.duration));
   }
-  
+
   return sortedSongs;
 });
 
@@ -50,11 +65,7 @@ class GenreScreen extends ConsumerWidget {
   final String genreName;
   final Color? genreColor;
 
-  const GenreScreen({
-    super.key,
-    required this.genreName,
-    this.genreColor,
-  });
+  const GenreScreen({super.key, required this.genreName, this.genreColor});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -84,7 +95,7 @@ class GenreScreen extends ConsumerWidget {
                   color: AppColors.textPrimaryDark,
                   shadows: [
                     Shadow(
-                      color: Colors.black.withOpacity(0.5),
+                      color: Colors.black.withValues(alpha: 0.5),
                       blurRadius: 8,
                     ),
                   ],
@@ -96,8 +107,8 @@ class GenreScreen extends ConsumerWidget {
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      color.withOpacity(0.8),
-                      color.withOpacity(0.4),
+                      color.withValues(alpha: 0.8),
+                      color.withValues(alpha: 0.4),
                       AppColors.backgroundDark,
                     ],
                     stops: const [0.0, 0.5, 1.0],
@@ -107,7 +118,7 @@ class GenreScreen extends ConsumerWidget {
                   child: Icon(
                     _getGenreIcon(genreName),
                     size: 80,
-                    color: Colors.white.withOpacity(0.3),
+                    color: Colors.white.withValues(alpha: 0.3),
                   ),
                 ),
               ),
@@ -141,7 +152,9 @@ class GenreScreen extends ConsumerWidget {
                         Text(
                           'Sorted by ${sortOption.label}',
                           style: AppTextStyles.caption1.copyWith(
-                            color: AppColors.textSecondaryDark.withOpacity(0.7),
+                            color: AppColors.textSecondaryDark.withValues(
+                              alpha: 0.7,
+                            ),
                           ),
                         ),
                       ],
@@ -186,7 +199,7 @@ class GenreScreen extends ConsumerWidget {
                     Icon(
                       Iconsax.music,
                       size: 64,
-                      color: AppColors.textSecondaryDark.withOpacity(0.5),
+                      color: AppColors.textSecondaryDark.withValues(alpha: 0.5),
                     ),
                     const SizedBox(height: 16),
                     Text(
@@ -199,7 +212,9 @@ class GenreScreen extends ConsumerWidget {
                     Text(
                       'Songs will appear here when scanned',
                       style: AppTextStyles.body.copyWith(
-                        color: AppColors.textSecondaryDark.withOpacity(0.7),
+                        color: AppColors.textSecondaryDark.withValues(
+                          alpha: 0.7,
+                        ),
                       ),
                     ),
                   ],
@@ -208,22 +223,17 @@ class GenreScreen extends ConsumerWidget {
             )
           else
             SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  final song = songs[index];
-                  return SongTile(
-                    song: song,
-                    onTap: () => audioService.playQueue(songs, startIndex: index),
-                  );
-                },
-                childCount: songs.length,
-              ),
+              delegate: SliverChildBuilderDelegate((context, index) {
+                final song = songs[index];
+                return SongTile(
+                  song: song,
+                  onTap: () => audioService.playQueue(songs, startIndex: index),
+                );
+              }, childCount: songs.length),
             ),
 
           // Bottom padding
-          const SliverToBoxAdapter(
-            child: SizedBox(height: 120),
-          ),
+          const SliverToBoxAdapter(child: SizedBox(height: 120)),
         ],
       ),
     );
@@ -247,7 +257,7 @@ class GenreScreen extends ConsumerWidget {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: AppColors.textSecondaryDark.withOpacity(0.3),
+                  color: AppColors.textSecondaryDark.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -262,24 +272,35 @@ class GenreScreen extends ConsumerWidget {
               ),
               const Divider(color: AppColors.dividerDark, height: 1),
               ...GenreSongSortOption.values.map((option) {
-                final isSelected = ref.read(genreSongSortOptionProvider) == option;
+                final isSelected =
+                    ref.read(genreSongSortOptionProvider) == option;
                 return ListTile(
                   leading: Icon(
                     _getSortIcon(option),
-                    color: isSelected ? genreColor ?? AppColors.accentBlue : AppColors.textSecondaryDark,
+                    color: isSelected
+                        ? genreColor ?? AppColors.accentBlue
+                        : AppColors.textSecondaryDark,
                   ),
                   title: Text(
                     option.label,
                     style: AppTextStyles.body.copyWith(
-                      color: isSelected ? genreColor ?? AppColors.accentBlue : AppColors.textPrimaryDark,
-                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                      color: isSelected
+                          ? genreColor ?? AppColors.accentBlue
+                          : AppColors.textPrimaryDark,
+                      fontWeight: isSelected
+                          ? FontWeight.w600
+                          : FontWeight.normal,
                     ),
                   ),
                   trailing: isSelected
-                      ? Icon(Icons.check, color: genreColor ?? AppColors.accentBlue)
+                      ? Icon(
+                          Icons.check,
+                          color: genreColor ?? AppColors.accentBlue,
+                        )
                       : null,
                   onTap: () {
-                    ref.read(genreSongSortOptionProvider.notifier).state = option;
+                    ref.read(genreSongSortOptionProvider.notifier).state =
+                        option;
                     Navigator.pop(context);
                   },
                 );
@@ -309,7 +330,7 @@ class GenreScreen extends ConsumerWidget {
 
   IconData _getGenreIcon(String genre) {
     final lowerGenre = genre.toLowerCase();
-    
+
     if (lowerGenre.contains('rock') || lowerGenre.contains('metal')) {
       return Iconsax.music;
     } else if (lowerGenre.contains('pop')) {
@@ -318,9 +339,12 @@ class GenreScreen extends ConsumerWidget {
       return Iconsax.microphone;
     } else if (lowerGenre.contains('jazz') || lowerGenre.contains('blues')) {
       return Iconsax.music_dashboard;
-    } else if (lowerGenre.contains('classical') || lowerGenre.contains('orchestra')) {
+    } else if (lowerGenre.contains('classical') ||
+        lowerGenre.contains('orchestra')) {
       return Iconsax.note;
-    } else if (lowerGenre.contains('electronic') || lowerGenre.contains('edm') || lowerGenre.contains('house')) {
+    } else if (lowerGenre.contains('electronic') ||
+        lowerGenre.contains('edm') ||
+        lowerGenre.contains('house')) {
       return Iconsax.cpu;
     } else if (lowerGenre.contains('country') || lowerGenre.contains('folk')) {
       return Iconsax.tree;

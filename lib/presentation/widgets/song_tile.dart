@@ -33,7 +33,8 @@ class SongTile extends ConsumerStatefulWidget {
   ConsumerState<SongTile> createState() => _SongTileState();
 }
 
-class _SongTileState extends ConsumerState<SongTile> with SingleTickerProviderStateMixin {
+class _SongTileState extends ConsumerState<SongTile>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
 
@@ -44,9 +45,10 @@ class _SongTileState extends ConsumerState<SongTile> with SingleTickerProviderSt
       duration: const Duration(milliseconds: 100),
       vsync: this,
     );
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.98).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
-    );
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.98,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
   }
 
   @override
@@ -64,10 +66,8 @@ class _SongTileState extends ConsumerState<SongTile> with SingleTickerProviderSt
       onTap: widget.onTap,
       child: AnimatedBuilder(
         animation: _scaleAnimation,
-        builder: (context, child) => Transform.scale(
-          scale: _scaleAnimation.value,
-          child: child,
-        ),
+        builder: (context, child) =>
+            Transform.scale(scale: _scaleAnimation.value, child: child),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           child: Row(
@@ -79,7 +79,7 @@ class _SongTileState extends ConsumerState<SongTile> with SingleTickerProviderSt
                     borderRadius: BorderRadius.circular(10),
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.shadowDark.withOpacity(0.3),
+                        color: AppColors.shadowDark.withValues(alpha: 0.3),
                         blurRadius: 8,
                         offset: const Offset(0, 4),
                         spreadRadius: -2,
@@ -116,8 +116,8 @@ class _SongTileState extends ConsumerState<SongTile> with SingleTickerProviderSt
                     Text(
                       widget.song.title,
                       style: TextStyle(
-                        color: widget.isPlaying 
-                            ? AppColors.primary 
+                        color: widget.isPlaying
+                            ? AppColors.primary
                             : AppColors.textPrimaryDark,
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
@@ -131,9 +131,14 @@ class _SongTileState extends ConsumerState<SongTile> with SingleTickerProviderSt
                       children: [
                         if (widget.song.isExplicit) ...[
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 5,
+                              vertical: 2,
+                            ),
                             decoration: BoxDecoration(
-                              color: AppColors.textSecondaryDark.withOpacity(0.2),
+                              color: AppColors.textSecondaryDark.withValues(
+                                alpha: 0.2,
+                              ),
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: const Text(
@@ -151,7 +156,9 @@ class _SongTileState extends ConsumerState<SongTile> with SingleTickerProviderSt
                           child: Text(
                             widget.song.artist,
                             style: TextStyle(
-                              color: AppColors.textSecondaryDark.withOpacity(0.8),
+                              color: AppColors.textSecondaryDark.withValues(
+                                alpha: 0.8,
+                              ),
                               fontSize: 14,
                               fontWeight: FontWeight.w400,
                             ),
@@ -171,7 +178,7 @@ class _SongTileState extends ConsumerState<SongTile> with SingleTickerProviderSt
                   Text(
                     widget.song.formattedDuration,
                     style: TextStyle(
-                      color: AppColors.textSecondaryDark.withOpacity(0.7),
+                      color: AppColors.textSecondaryDark.withValues(alpha: 0.7),
                       fontSize: 13,
                       fontWeight: FontWeight.w400,
                     ),
@@ -194,11 +201,7 @@ class _SongTileState extends ConsumerState<SongTile> with SingleTickerProviderSt
       child: Stack(
         alignment: Alignment.center,
         children: [
-          Icon(
-            Icons.equalizer_rounded,
-            color: AppColors.primary,
-            size: 18,
-          ),
+          Icon(Icons.equalizer_rounded, color: AppColors.primary, size: 18),
         ],
       ),
     );
@@ -218,7 +221,7 @@ class _SongTileState extends ConsumerState<SongTile> with SingleTickerProviderSt
         );
       }
     }
-    
+
     // Fall back to network image
     if (widget.song.artworkUrl != null) {
       return CachedNetworkImage(
@@ -230,7 +233,7 @@ class _SongTileState extends ConsumerState<SongTile> with SingleTickerProviderSt
         errorWidget: (context, url, error) => _buildPlaceholder(),
       );
     }
-    
+
     return _buildPlaceholder();
   }
 
@@ -246,7 +249,7 @@ class _SongTileState extends ConsumerState<SongTile> with SingleTickerProviderSt
         ),
         child: Icon(
           Icons.more_horiz,
-          color: AppColors.textSecondaryDark.withOpacity(0.7),
+          color: AppColors.textSecondaryDark.withValues(alpha: 0.7),
           size: 22,
         ),
       ),
@@ -261,16 +264,13 @@ class _SongTileState extends ConsumerState<SongTile> with SingleTickerProviderSt
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            AppColors.glassDark,
-            AppColors.glassLight,
-          ],
+          colors: [AppColors.glassDark, AppColors.glassLight],
         ),
         borderRadius: BorderRadius.circular(10),
       ),
       child: Icon(
         Icons.music_note_rounded,
-        color: AppColors.textSecondaryDark.withOpacity(0.5),
+        color: AppColors.textSecondaryDark.withValues(alpha: 0.5),
         size: 24,
       ),
     );
@@ -290,7 +290,7 @@ class _SongTileState extends ConsumerState<SongTile> with SingleTickerProviderSt
         );
       }
     }
-    
+
     // Fall back to network image
     if (widget.song.artworkUrl != null) {
       return CachedNetworkImage(
@@ -302,7 +302,7 @@ class _SongTileState extends ConsumerState<SongTile> with SingleTickerProviderSt
         errorWidget: (context, url, error) => _buildSheetPlaceholder(),
       );
     }
-    
+
     return _buildSheetPlaceholder();
   }
 
@@ -314,16 +314,13 @@ class _SongTileState extends ConsumerState<SongTile> with SingleTickerProviderSt
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            AppColors.glassDark,
-            AppColors.glassLight,
-          ],
+          colors: [AppColors.glassDark, AppColors.glassLight],
         ),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Icon(
         Icons.music_note_rounded,
-        color: AppColors.textSecondaryDark.withOpacity(0.5),
+        color: AppColors.textSecondaryDark.withValues(alpha: 0.5),
         size: 28,
       ),
     );
@@ -349,14 +346,14 @@ class _SongTileState extends ConsumerState<SongTile> with SingleTickerProviderSt
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                AppColors.glassDark.withOpacity(0.95),
-                AppColors.surfaceDark.withOpacity(0.98),
+                AppColors.glassDark.withValues(alpha: 0.95),
+                AppColors.surfaceDark.withValues(alpha: 0.98),
               ],
             ),
             borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
             border: Border(
               top: BorderSide(
-                color: AppColors.glassHighlight.withOpacity(0.3),
+                color: AppColors.glassHighlight.withValues(alpha: 0.3),
                 width: 1,
               ),
             ),
@@ -371,7 +368,7 @@ class _SongTileState extends ConsumerState<SongTile> with SingleTickerProviderSt
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: AppColors.glassHighlight.withOpacity(0.5),
+                    color: AppColors.glassHighlight.withValues(alpha: 0.5),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -386,7 +383,9 @@ class _SongTileState extends ConsumerState<SongTile> with SingleTickerProviderSt
                           borderRadius: BorderRadius.circular(12),
                           boxShadow: [
                             BoxShadow(
-                              color: AppColors.shadowDark.withOpacity(0.4),
+                              color: AppColors.shadowDark.withValues(
+                                alpha: 0.4,
+                              ),
                               blurRadius: 16,
                               offset: const Offset(0, 6),
                               spreadRadius: -4,
@@ -418,7 +417,9 @@ class _SongTileState extends ConsumerState<SongTile> with SingleTickerProviderSt
                             Text(
                               widget.song.artist,
                               style: TextStyle(
-                                color: AppColors.textSecondaryDark.withOpacity(0.8),
+                                color: AppColors.textSecondaryDark.withValues(
+                                  alpha: 0.8,
+                                ),
                                 fontSize: 15,
                                 fontWeight: FontWeight.w400,
                               ),
@@ -433,7 +434,7 @@ class _SongTileState extends ConsumerState<SongTile> with SingleTickerProviderSt
                 ),
                 const SizedBox(height: 20),
                 Divider(
-                  color: AppColors.dividerDark.withOpacity(0.5),
+                  color: AppColors.dividerDark.withValues(alpha: 0.5),
                   height: 1,
                 ),
                 // Options
@@ -458,7 +459,9 @@ class _SongTileState extends ConsumerState<SongTile> with SingleTickerProviderSt
                   icon: Icons.queue_music_rounded,
                   title: 'Add to Queue',
                   onTap: () {
-                    ref.read(audioPlayerServiceProvider).addToQueue(widget.song);
+                    ref
+                        .read(audioPlayerServiceProvider)
+                        .addToQueue(widget.song);
                     Navigator.pop(context);
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
@@ -480,21 +483,29 @@ class _SongTileState extends ConsumerState<SongTile> with SingleTickerProviderSt
                 ),
                 Consumer(
                   builder: (context, ref, child) {
-                    final isFavorite = ref.watch(isSongFavoriteProvider(widget.song.id));
+                    final isFavorite = ref.watch(
+                      isSongFavoriteProvider(widget.song.id),
+                    );
                     return _buildOptionTile(
                       context: context,
-                      icon: isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                      title: isFavorite ? 'Remove from Favorites' : 'Add to Favorites',
+                      icon: isFavorite
+                          ? Icons.favorite_rounded
+                          : Icons.favorite_border_rounded,
+                      title: isFavorite
+                          ? 'Remove from Favorites'
+                          : 'Add to Favorites',
                       iconColor: isFavorite ? AppColors.accentPink : null,
                       onTap: () {
-                        ref.read(favoriteSongsProvider.notifier).toggleFavorite(widget.song);
+                        ref
+                            .read(favoriteSongsProvider.notifier)
+                            .toggleFavorite(widget.song);
                         Navigator.pop(context);
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(
-                              isFavorite 
-                                ? 'Removed from Favorites' 
-                                : 'Added to Favorites',
+                              isFavorite
+                                  ? 'Removed from Favorites'
+                                  : 'Added to Favorites',
                             ),
                             behavior: SnackBarBehavior.floating,
                             backgroundColor: AppColors.glassDark,

@@ -80,7 +80,7 @@ class Album extends Equatable {
   String get formattedDuration {
     final hours = totalDuration.inHours;
     final minutes = totalDuration.inMinutes % 60;
-    
+
     if (hours > 0) {
       return '$hours hr $minutes min';
     }
@@ -89,20 +89,20 @@ class Album extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        title,
-        artist,
-        artistId,
-        artworkUrl,
-        localArtworkPath,
-        isLocal,
-        releaseYear,
-        genre,
-        songs,
-        songCount,
-        totalDuration,
-        isExplicit,
-        copyright,
-        description,
-      ];
+    id,
+    title,
+    artist,
+    artistId,
+    artworkUrl,
+    localArtworkPath,
+    isLocal,
+    releaseYear,
+    genre,
+    songs,
+    songCount,
+    totalDuration,
+    isExplicit,
+    copyright,
+    description,
+  ];
 }

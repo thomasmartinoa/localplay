@@ -41,14 +41,16 @@ class GlassContainer extends StatelessWidget {
       margin: margin,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(borderRadius),
-        boxShadow: boxShadow ?? [
-          BoxShadow(
-            color: AppColors.shadowDark,
-            blurRadius: 24,
-            offset: const Offset(0, 8),
-            spreadRadius: -4,
-          ),
-        ],
+        boxShadow:
+            boxShadow ??
+            [
+              BoxShadow(
+                color: AppColors.shadowDark,
+                blurRadius: 24,
+                offset: const Offset(0, 8),
+                spreadRadius: -4,
+              ),
+            ],
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(borderRadius),
@@ -57,17 +59,24 @@ class GlassContainer extends StatelessWidget {
           child: Container(
             padding: padding,
             decoration: BoxDecoration(
-              gradient: gradient ?? LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  (backgroundColor ?? AppColors.glassDark).withOpacity(0.7),
-                  (backgroundColor ?? AppColors.glassLight).withOpacity(0.5),
-                ],
-              ),
+              gradient:
+                  gradient ??
+                  LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      (backgroundColor ?? AppColors.glassDark).withValues(
+                        alpha: 0.7,
+                      ),
+                      (backgroundColor ?? AppColors.glassLight).withValues(
+                        alpha: 0.5,
+                      ),
+                    ],
+                  ),
               borderRadius: BorderRadius.circular(borderRadius),
               border: Border.all(
-                color: borderColor ?? AppColors.glassBorder.withOpacity(0.3),
+                color:
+                    borderColor ?? AppColors.glassBorder.withValues(alpha: 0.3),
                 width: borderWidth,
               ),
             ),
@@ -106,7 +115,8 @@ class GlassCard extends StatefulWidget {
   State<GlassCard> createState() => _GlassCardState();
 }
 
-class _GlassCardState extends State<GlassCard> with SingleTickerProviderStateMixin {
+class _GlassCardState extends State<GlassCard>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
 
@@ -117,9 +127,10 @@ class _GlassCardState extends State<GlassCard> with SingleTickerProviderStateMix
       duration: const Duration(milliseconds: 150),
       vsync: this,
     );
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.97).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.97,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
   }
 
   @override
@@ -137,10 +148,8 @@ class _GlassCardState extends State<GlassCard> with SingleTickerProviderStateMix
       onTap: widget.onTap,
       child: AnimatedBuilder(
         animation: _scaleAnimation,
-        builder: (context, child) => Transform.scale(
-          scale: _scaleAnimation.value,
-          child: child,
-        ),
+        builder: (context, child) =>
+            Transform.scale(scale: _scaleAnimation.value, child: child),
         child: GlassContainer(
           width: widget.width,
           height: widget.height,
@@ -179,7 +188,8 @@ class GlassButton extends StatefulWidget {
   State<GlassButton> createState() => _GlassButtonState();
 }
 
-class _GlassButtonState extends State<GlassButton> with SingleTickerProviderStateMixin {
+class _GlassButtonState extends State<GlassButton>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
 
@@ -190,9 +200,10 @@ class _GlassButtonState extends State<GlassButton> with SingleTickerProviderStat
       duration: const Duration(milliseconds: 100),
       vsync: this,
     );
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.95).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.95,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
   }
 
   @override
@@ -210,10 +221,8 @@ class _GlassButtonState extends State<GlassButton> with SingleTickerProviderStat
       onTap: widget.onPressed,
       child: AnimatedBuilder(
         animation: _scaleAnimation,
-        builder: (context, child) => Transform.scale(
-          scale: _scaleAnimation.value,
-          child: child,
-        ),
+        builder: (context, child) =>
+            Transform.scale(scale: _scaleAnimation.value, child: child),
         child: Container(
           width: widget.width,
           height: widget.height,
@@ -229,15 +238,15 @@ class _GlassButtonState extends State<GlassButton> with SingleTickerProviderStat
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      AppColors.glassDark.withOpacity(0.8),
-                      AppColors.glassLight.withOpacity(0.6),
+                      AppColors.glassDark.withValues(alpha: 0.8),
+                      AppColors.glassLight.withValues(alpha: 0.6),
                     ],
                   ),
             borderRadius: BorderRadius.circular(widget.borderRadius),
             border: Border.all(
               color: widget.isPrimary
-                  ? AppColors.primaryLight.withOpacity(0.3)
-                  : AppColors.glassBorder.withOpacity(0.3),
+                  ? AppColors.primaryLight.withValues(alpha: 0.3)
+                  : AppColors.glassBorder.withValues(alpha: 0.3),
               width: 1,
             ),
             boxShadow: widget.isPrimary
@@ -288,7 +297,8 @@ class GlassIconButton extends StatefulWidget {
   State<GlassIconButton> createState() => _GlassIconButtonState();
 }
 
-class _GlassIconButtonState extends State<GlassIconButton> with SingleTickerProviderStateMixin {
+class _GlassIconButtonState extends State<GlassIconButton>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
 
@@ -299,9 +309,10 @@ class _GlassIconButtonState extends State<GlassIconButton> with SingleTickerProv
       duration: const Duration(milliseconds: 100),
       vsync: this,
     );
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.9).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.9,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
   }
 
   @override
@@ -319,10 +330,8 @@ class _GlassIconButtonState extends State<GlassIconButton> with SingleTickerProv
       onTap: widget.onPressed,
       child: AnimatedBuilder(
         animation: _scaleAnimation,
-        builder: (context, child) => Transform.scale(
-          scale: _scaleAnimation.value,
-          child: child,
-        ),
+        builder: (context, child) =>
+            Transform.scale(scale: _scaleAnimation.value, child: child),
         child: Container(
           width: widget.size,
           height: widget.size,
@@ -332,27 +341,30 @@ class _GlassIconButtonState extends State<GlassIconButton> with SingleTickerProv
               end: Alignment.bottomRight,
               colors: widget.isActive
                   ? [
-                      AppColors.primary.withOpacity(0.3),
-                      AppColors.primaryDark.withOpacity(0.2),
+                      AppColors.primary.withValues(alpha: 0.3),
+                      AppColors.primaryDark.withValues(alpha: 0.2),
                     ]
                   : [
-                      AppColors.glassDark.withOpacity(0.6),
-                      AppColors.glassLight.withOpacity(0.4),
+                      AppColors.glassDark.withValues(alpha: 0.6),
+                      AppColors.glassLight.withValues(alpha: 0.4),
                     ],
             ),
             shape: BoxShape.circle,
             border: Border.all(
               color: widget.isActive
-                  ? AppColors.primary.withOpacity(0.4)
-                  : AppColors.glassBorder.withOpacity(0.3),
+                  ? AppColors.primary.withValues(alpha: 0.4)
+                  : AppColors.glassBorder.withValues(alpha: 0.3),
               width: 1,
             ),
           ),
           child: Icon(
             widget.icon,
             size: widget.iconSize,
-            color: widget.iconColor ??
-                (widget.isActive ? AppColors.primary : AppColors.textPrimaryDark),
+            color:
+                widget.iconColor ??
+                (widget.isActive
+                    ? AppColors.primary
+                    : AppColors.textPrimaryDark),
           ),
         ),
       ),

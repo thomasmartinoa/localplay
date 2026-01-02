@@ -3,24 +3,27 @@ import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:crypto/crypto.dart';
 import 'dart:convert';
+import '../../core/utils/app_logger.dart';
 
 /// Service to extract embedded artwork from audio files using platform channels
 class ArtworkExtractor {
-  static const MethodChannel _channel = MethodChannel('com.example.localplay/artwork');
-  
+  static const MethodChannel _channel = MethodChannel(
+    'com.example.localplay/artwork',
+  );
+
   Directory? _artworkCacheDir;
 
   /// Get the artwork cache directory
   Future<Directory> _getArtworkCacheDir() async {
     if (_artworkCacheDir != null) return _artworkCacheDir!;
-    
+
     final appDir = await getApplicationDocumentsDirectory();
     _artworkCacheDir = Directory('${appDir.path}/artwork_cache');
-    
+
     if (!await _artworkCacheDir!.exists()) {
       await _artworkCacheDir!.create(recursive: true);
     }
-    
+
     return _artworkCacheDir!;
   }
 
@@ -39,28 +42,28 @@ class ArtworkExtractor {
       final fileId = _generateId(audioFilePath);
       final cacheDir = await _getArtworkCacheDir();
       final artworkPath = '${cacheDir.path}/$fileId.jpg';
-      
+
       // Check if artwork is already cached
       final cachedFile = File(artworkPath);
       if (await cachedFile.exists()) {
         return artworkPath;
       }
-      
+
       // Extract artwork using platform channel
       final Uint8List? artworkData = await _channel.invokeMethod<Uint8List>(
         'extractArtwork',
         {'filePath': audioFilePath},
       );
-      
+
       if (artworkData == null || artworkData.isEmpty) {
         return null;
       }
-      
+
       // Save to cache
       await cachedFile.writeAsBytes(artworkData);
       return artworkPath;
     } catch (e) {
-      print('Error extracting artwork from $audioFilePath: $e');
+      AppLogger.error('extracting artwork from $audioFilePath: $e');
       return null;
     }
   }
@@ -74,7 +77,7 @@ class ArtworkExtractor {
       );
       return artworkData;
     } catch (e) {
-      print('Error extracting artwork bytes: $e');
+      AppLogger.error('extracting artwork bytes: $e');
       return null;
     }
   }
@@ -87,12 +90,12 @@ class ArtworkExtractor {
         'extractMetadata',
         {'filePath': audioFilePath},
       );
-      
+
       if (result == null) return null;
-      
+
       return Map<String, dynamic>.from(result);
     } catch (e) {
-      print('Error extracting metadata from $audioFilePath: $e');
+      AppLogger.error('extracting metadata from $audioFilePath: $e');
       return null;
     }
   }
@@ -107,7 +110,7 @@ class ArtworkExtractor {
       }
       _artworkCacheDir = null;
     } catch (e) {
-      print('Error clearing artwork cache: $e');
+      AppLogger.error('clearing artwork cache: $e');
     }
   }
 
@@ -116,7 +119,7 @@ class ArtworkExtractor {
     try {
       final cacheDir = await _getArtworkCacheDir();
       if (!await cacheDir.exists()) return 0;
-      
+
       int totalSize = 0;
       await for (final entity in cacheDir.list(recursive: true)) {
         if (entity is File) {

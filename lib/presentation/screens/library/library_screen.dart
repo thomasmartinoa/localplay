@@ -35,158 +35,155 @@ class LibraryScreen extends ConsumerWidget {
             physics: const BouncingScrollPhysics(),
             slivers: [
               // Space for floating header
-              SliverToBoxAdapter(
-                child: SizedBox(height: statusBarHeight + 60),
-              ),
+              SliverToBoxAdapter(child: SizedBox(height: statusBarHeight + 60)),
 
               // Scan Progress Card
               scanProgressAsync.when(
                 data: (progress) => progress.isScanning
-                    ? SliverToBoxAdapter(child: _buildScanProgressCard(progress))
+                    ? SliverToBoxAdapter(
+                        child: _buildScanProgressCard(progress),
+                      )
                     : const SliverToBoxAdapter(child: SizedBox.shrink()),
-                loading: () => const SliverToBoxAdapter(child: SizedBox.shrink()),
-                error: (_, __) => const SliverToBoxAdapter(child: SizedBox.shrink()),
+                loading: () =>
+                    const SliverToBoxAdapter(child: SizedBox.shrink()),
+                error: (_, stackTrace) =>
+                    const SliverToBoxAdapter(child: SizedBox.shrink()),
               ),
 
-          // Empty State or Library Content
-          if (localSongs.isEmpty)
-            SliverToBoxAdapter(child: _buildEmptyState(context, ref))
-          else ...[
-            // Library sections
-            SliverToBoxAdapter(
-              child: Column(
-                children: [
-                  _buildLibraryItem(
-                    context,
-                    icon: Iconsax.music_playlist,
-                    title: 'Playlists',
-                    subtitle: '${playlists.length} playlists',
-                    onTap: () => context.push('/all-playlists'),
+              // Empty State or Library Content
+              if (localSongs.isEmpty)
+                SliverToBoxAdapter(child: _buildEmptyState(context, ref))
+              else ...[
+                // Library sections
+                SliverToBoxAdapter(
+                  child: Column(
+                    children: [
+                      _buildLibraryItem(
+                        context,
+                        icon: Iconsax.music_playlist,
+                        title: 'Playlists',
+                        subtitle: '${playlists.length} playlists',
+                        onTap: () => context.push('/all-playlists'),
+                      ),
+                      _buildLibraryItem(
+                        context,
+                        icon: Iconsax.music,
+                        title: 'Artists',
+                        subtitle: '${localArtists.length} artists',
+                        onTap: () => context.push('/all-artists'),
+                      ),
+                      _buildLibraryItem(
+                        context,
+                        icon: Iconsax.cd,
+                        title: 'Albums',
+                        subtitle: '${localAlbums.length} albums',
+                        onTap: () => context.push('/all-albums'),
+                      ),
+                      _buildLibraryItem(
+                        context,
+                        icon: Iconsax.music_square,
+                        title: 'Songs',
+                        subtitle: '${localSongs.length} songs',
+                        onTap: () => context.push('/all-songs'),
+                      ),
+                      _buildLibraryItem(
+                        context,
+                        icon: Iconsax.heart,
+                        title: 'Favorites',
+                        subtitle: '${favorites.length} songs',
+                        onTap: () => context.push('/favorites'),
+                      ),
+                    ],
                   ),
-                  _buildLibraryItem(
-                    context,
-                    icon: Iconsax.music,
-                    title: 'Artists',
-                    subtitle: '${localArtists.length} artists',
-                    onTap: () => context.push('/all-artists'),
+                ),
+
+                // Divider
+                const SliverToBoxAdapter(
+                  child: Divider(
+                    color: AppColors.dividerDark,
+                    height: 32,
+                    indent: 16,
+                    endIndent: 16,
                   ),
-                  _buildLibraryItem(
-                    context,
-                    icon: Iconsax.cd,
-                    title: 'Albums',
-                    subtitle: '${localAlbums.length} albums',
-                    onTap: () => context.push('/all-albums'),
+                ),
+
+                // Recently Added section
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Recently Added',
+                          style: AppTextStyles.title3.copyWith(
+                            color: AppColors.textPrimaryDark,
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () {},
+                          child: const Text(
+                            'See All',
+                            style: TextStyle(color: AppColors.primary),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  _buildLibraryItem(
-                    context,
-                    icon: Iconsax.music_square,
-                    title: 'Songs',
-                    subtitle: '${localSongs.length} songs',
-                    onTap: () => context.push('/all-songs'),
+                ),
+
+                // Recently Added Songs
+                SliverList(
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    final song = recentlyAdded[index];
+                    return SongTile(
+                      song: song,
+                      onTap: () => _playSong(ref, song, recentlyAdded),
+                    );
+                  }, childCount: recentlyAdded.take(10).length),
+                ),
+
+                // Playlists section
+                if (playlists.isNotEmpty) ...[
+                  const SliverToBoxAdapter(
+                    child: Divider(
+                      color: AppColors.dividerDark,
+                      height: 32,
+                      indent: 16,
+                      endIndent: 16,
+                    ),
                   ),
-                  _buildLibraryItem(
-                    context,
-                    icon: Iconsax.heart,
-                    title: 'Favorites',
-                    subtitle: '${favorites.length} songs',
-                    onTap: () => context.push('/favorites'),
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Text(
+                        'Playlists',
+                        style: AppTextStyles.title3.copyWith(
+                          color: AppColors.textPrimaryDark,
+                        ),
+                      ),
+                    ),
+                  ),
+                  SliverList(
+                    delegate: SliverChildBuilderDelegate((context, index) {
+                      final playlist = playlists[index];
+                      return PlaylistTile(
+                        playlist: playlist,
+                        onTap: () => context.push(
+                          '/playlist/${playlist.id}',
+                          extra: playlist,
+                        ),
+                      );
+                    }, childCount: playlists.length),
                   ),
                 ],
-              ),
-            ),
+              ],
 
-            // Divider
-            const SliverToBoxAdapter(
-              child: Divider(
-                color: AppColors.dividerDark,
-                height: 32,
-                indent: 16,
-                endIndent: 16,
-              ),
-            ),
-
-            // Recently Added section
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Recently Added',
-                      style: AppTextStyles.title3.copyWith(
-                        color: AppColors.textPrimaryDark,
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: () {},
-                      child: const Text(
-                        'See All',
-                        style: TextStyle(color: AppColors.primary),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            // Recently Added Songs
-            SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  final song = recentlyAdded[index];
-                  return SongTile(
-                    song: song,
-                    onTap: () => _playSong(ref, song, recentlyAdded),
-                  );
-                },
-                childCount: recentlyAdded.take(10).length,
-              ),
-            ),
-
-            // Playlists section
-            if (playlists.isNotEmpty) ...[
-              const SliverToBoxAdapter(
-                child: Divider(
-                  color: AppColors.dividerDark,
-                  height: 32,
-                  indent: 16,
-                  endIndent: 16,
-                ),
-              ),
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Text(
-                    'Playlists',
-                    style: AppTextStyles.title3.copyWith(
-                      color: AppColors.textPrimaryDark,
-                    ),
-                  ),
-                ),
-              ),
-              SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final playlist = playlists[index];
-                    return PlaylistTile(
-                      playlist: playlist,
-                      onTap: () => context.push('/playlist/${playlist.id}', extra: playlist),
-                    );
-                  },
-                  childCount: playlists.length,
-                ),
-              ),
-            ],
-          ],
-
-          // Bottom padding
-          const SliverToBoxAdapter(
-            child: SizedBox(height: 160),
-          ),
+              // Bottom padding
+              const SliverToBoxAdapter(child: SizedBox(height: 160)),
             ],
           ),
-          
+
           // Floating header with smooth gradient fade
           Positioned(
             top: 0,
@@ -202,9 +199,9 @@ class LibraryScreen extends ConsumerWidget {
                     colors: [
                       AppColors.backgroundGradientStart,
                       AppColors.backgroundGradientStart,
-                      AppColors.backgroundGradientStart.withOpacity(0.95),
-                      AppColors.backgroundGradientStart.withOpacity(0.7),
-                      AppColors.backgroundGradientStart.withOpacity(0.3),
+                      AppColors.backgroundGradientStart.withValues(alpha: 0.95),
+                      AppColors.backgroundGradientStart.withValues(alpha: 0.7),
+                      AppColors.backgroundGradientStart.withValues(alpha: 0.3),
                       Colors.transparent,
                     ],
                     stops: const [0.0, 0.3, 0.5, 0.7, 0.85, 1.0],
@@ -213,7 +210,7 @@ class LibraryScreen extends ConsumerWidget {
               ),
             ),
           ),
-          
+
           // Title and action buttons on top of gradient
           Positioned(
             top: statusBarHeight + 8,
@@ -240,10 +237,7 @@ class LibraryScreen extends ConsumerWidget {
                     ),
                     IconButton(
                       onPressed: () => _showCreatePlaylistDialog(context, ref),
-                      icon: const Icon(
-                        Iconsax.add,
-                        color: AppColors.primary,
-                      ),
+                      icon: const Icon(Iconsax.add, color: AppColors.primary),
                     ),
                   ],
                 ),
@@ -262,12 +256,12 @@ class LibraryScreen extends ConsumerWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppColors.primary.withOpacity(0.2),
-            AppColors.primaryDark.withOpacity(0.1),
+            AppColors.primary.withValues(alpha: 0.2),
+            AppColors.primaryDark.withValues(alpha: 0.1),
           ],
         ),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -297,7 +291,9 @@ class LibraryScreen extends ConsumerWidget {
             child: LinearProgressIndicator(
               value: progress.progress,
               backgroundColor: AppColors.glassDark,
-              valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
+              valueColor: const AlwaysStoppedAnimation<Color>(
+                AppColors.primary,
+              ),
               minHeight: 6,
             ),
           ),
@@ -320,7 +316,7 @@ class LibraryScreen extends ConsumerWidget {
   Widget _buildEmptyState(BuildContext context, WidgetRef ref) {
     final scanFolders = ref.watch(scanFoldersProvider);
     final hasSelectedFolders = scanFolders.isNotEmpty;
-    
+
     return Padding(
       padding: const EdgeInsets.all(32),
       child: Column(
@@ -331,7 +327,7 @@ class LibraryScreen extends ConsumerWidget {
             width: 100,
             height: 100,
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.1),
+              color: AppColors.primary.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: const Icon(
@@ -349,7 +345,7 @@ class LibraryScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            hasSelectedFolders 
+            hasSelectedFolders
                 ? 'You have ${scanFolders.length} folder(s) selected.\nTap below to scan for music.'
                 : 'Scan your device to find and play\nyour local music collection',
             textAlign: TextAlign.center,
@@ -358,7 +354,7 @@ class LibraryScreen extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 32),
-          
+
           // Show different buttons based on whether folders are selected
           if (hasSelectedFolders) ...[
             ElevatedButton.icon(
@@ -368,7 +364,10 @@ class LibraryScreen extends ConsumerWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 32,
+                  vertical: 16,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -381,7 +380,10 @@ class LibraryScreen extends ConsumerWidget {
               label: const Text('Scan All Device Music'),
               style: OutlinedButton.styleFrom(
                 foregroundColor: AppColors.primary,
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 32,
+                  vertical: 16,
+                ),
                 side: const BorderSide(color: AppColors.primary),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -396,22 +398,23 @@ class LibraryScreen extends ConsumerWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 32,
+                  vertical: 16,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
             ),
           ],
-          
+
           const SizedBox(height: 16),
           TextButton.icon(
             onPressed: () => context.push('/settings'),
             icon: const Icon(Iconsax.folder_add),
             label: const Text('Select Folders'),
-            style: TextButton.styleFrom(
-              foregroundColor: AppColors.primary,
-            ),
+            style: TextButton.styleFrom(foregroundColor: AppColors.primary),
           ),
         ],
       ),
@@ -430,13 +433,10 @@ class LibraryScreen extends ConsumerWidget {
         width: 50,
         height: 50,
         decoration: BoxDecoration(
-          color: AppColors.primary.withOpacity(0.1),
+          color: AppColors.primary.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(8),
         ),
-        child: Icon(
-          icon,
-          color: AppColors.primary,
-        ),
+        child: Icon(icon, color: AppColors.primary),
       ),
       title: Text(
         title,
@@ -475,9 +475,7 @@ class LibraryScreen extends ConsumerWidget {
           controller: controller,
           autofocus: true,
           style: const TextStyle(color: AppColors.textPrimaryDark),
-          decoration: const InputDecoration(
-            hintText: 'Playlist name',
-          ),
+          decoration: const InputDecoration(hintText: 'Playlist name'),
         ),
         actions: [
           TextButton(
@@ -487,9 +485,9 @@ class LibraryScreen extends ConsumerWidget {
           TextButton(
             onPressed: () {
               if (controller.text.isNotEmpty) {
-                ref.read(playlistsProvider.notifier).createPlaylist(
-                      controller.text,
-                    );
+                ref
+                    .read(playlistsProvider.notifier)
+                    .createPlaylist(controller.text);
                 Navigator.pop(context);
               }
             },
@@ -522,7 +520,9 @@ class LibraryScreen extends ConsumerWidget {
             const SizedBox(width: 12),
             Text(
               'Scan Entire Device',
-              style: AppTextStyles.title3.copyWith(color: AppColors.textPrimaryDark),
+              style: AppTextStyles.title3.copyWith(
+                color: AppColors.textPrimaryDark,
+              ),
             ),
           ],
         ),
@@ -532,7 +532,9 @@ class LibraryScreen extends ConsumerWidget {
           children: [
             Text(
               'This will scan ALL audio files on your device, including:',
-              style: AppTextStyles.body.copyWith(color: AppColors.textSecondaryDark),
+              style: AppTextStyles.body.copyWith(
+                color: AppColors.textSecondaryDark,
+              ),
             ),
             const SizedBox(height: 12),
             _buildBulletPoint('Ringtones & notifications'),
@@ -543,18 +545,26 @@ class LibraryScreen extends ConsumerWidget {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.1),
+                color: AppColors.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+                border: Border.all(
+                  color: AppColors.primary.withValues(alpha: 0.3),
+                ),
               ),
               child: Row(
                 children: [
-                  const Icon(Iconsax.info_circle, color: AppColors.primary, size: 20),
+                  const Icon(
+                    Iconsax.info_circle,
+                    color: AppColors.primary,
+                    size: 20,
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       'For a cleaner library, use "Select Folders" to pick specific music folders.',
-                      style: AppTextStyles.caption1.copyWith(color: AppColors.primary),
+                      style: AppTextStyles.caption1.copyWith(
+                        color: AppColors.primary,
+                      ),
                     ),
                   ),
                 ],
@@ -591,12 +601,16 @@ class LibraryScreen extends ConsumerWidget {
         children: [
           Text(
             '• ',
-            style: AppTextStyles.body.copyWith(color: AppColors.textSecondaryDark),
+            style: AppTextStyles.body.copyWith(
+              color: AppColors.textSecondaryDark,
+            ),
           ),
           Expanded(
             child: Text(
               text,
-              style: AppTextStyles.body.copyWith(color: AppColors.textSecondaryDark),
+              style: AppTextStyles.body.copyWith(
+                color: AppColors.textSecondaryDark,
+              ),
             ),
           ),
         ],

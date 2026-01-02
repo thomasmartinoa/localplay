@@ -5,6 +5,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:rxdart/rxdart.dart';
 import '../../domain/entities/entities.dart';
+import '../../core/utils/app_logger.dart';
 import 'artwork_extractor.dart';
 
 /// Scan progress state
@@ -26,7 +27,7 @@ class ScanProgress {
   });
 
   double get progress => totalFiles > 0 ? scannedFiles / totalFiles : 0;
-  
+
   ScanProgress copyWith({
     int? totalFiles,
     int? scannedFiles,
@@ -61,14 +62,22 @@ class ScanResult {
 
 /// Service for scanning local music files
 class LocalMusicScanner {
-  final BehaviorSubject<ScanProgress> _progressSubject = 
+  final BehaviorSubject<ScanProgress> _progressSubject =
       BehaviorSubject<ScanProgress>.seeded(const ScanProgress());
-  
+
   final ArtworkExtractor _artworkExtractor = ArtworkExtractor();
 
   /// Supported audio file extensions
   static const List<String> _supportedExtensions = [
-    '.mp3', '.m4a', '.aac', '.flac', '.wav', '.ogg', '.opus', '.wma', '.aiff'
+    '.mp3',
+    '.m4a',
+    '.aac',
+    '.flac',
+    '.wav',
+    '.ogg',
+    '.opus',
+    '.wma',
+    '.aiff',
   ];
 
   /// Stream of scan progress
@@ -84,34 +93,34 @@ class LocalMusicScanner {
       // For Android 13+ (API 33+), use audio permission
       final audioPermission = await Permission.audio.request();
       if (audioPermission.isGranted) {
-        print('Audio permission granted');
+        AppLogger.info('Audio permission granted');
         return true;
       }
-      
+
       // For Android 11+ (API 30+), may need manage external storage
       final managePermission = await Permission.manageExternalStorage.request();
       if (managePermission.isGranted) {
-        print('Manage external storage permission granted');
+        AppLogger.info('Manage external storage permission granted');
         return true;
       }
-      
+
       // Fallback to storage permission for older Android versions
       final storagePermission = await Permission.storage.request();
       if (storagePermission.isGranted) {
-        print('Storage permission granted');
+        AppLogger.info('Storage permission granted');
         return true;
       }
-      
-      print('No storage permissions granted');
+
+      AppLogger.warning('No storage permissions granted');
       return false;
     }
-    
+
     // For iOS
     if (Platform.isIOS) {
       final permission = await Permission.mediaLibrary.request();
       return permission.isGranted;
     }
-    
+
     return true;
   }
 
@@ -120,16 +129,16 @@ class LocalMusicScanner {
     if (Platform.isAndroid) {
       final audioStatus = await Permission.audio.status;
       if (audioStatus.isGranted) return true;
-      
+
       final storageStatus = await Permission.storage.status;
       return storageStatus.isGranted;
     }
-    
+
     if (Platform.isIOS) {
       final status = await Permission.mediaLibrary.status;
       return status.isGranted;
     }
-    
+
     return true;
   }
 
@@ -157,10 +166,10 @@ class LocalMusicScanner {
         final relativePath = Uri.decodeComponent(match.group(1)!);
         return '/storage/emulated/0/$relativePath';
       }
-      print('Could not parse content URI: $path');
+      AppLogger.warning('Could not parse content URI: $path');
       return path;
     }
-    
+
     // Handle /tree/ or /document/ paths
     if (path.contains('/tree/') || path.contains('/document/')) {
       final match = RegExp(r'primary[:%](.+)$').firstMatch(path);
@@ -169,56 +178,58 @@ class LocalMusicScanner {
         return '/storage/emulated/0/$relativePath';
       }
     }
-    
+
     return path;
   }
 
   /// Get all audio files from a directory recursively
   Future<List<File>> _getAudioFiles(List<String> folderPaths) async {
     final audioFiles = <File>[];
-    
+
     for (final originalPath in folderPaths) {
       final folderPath = _normalizePath(originalPath);
-      print('Scanning folder: $folderPath (original: $originalPath)');
-      
+      AppLogger.info('Scanning folder: $folderPath (original: $originalPath)');
+
       final folder = Directory(folderPath);
       if (!await folder.exists()) {
-        print('Folder does not exist: $folderPath');
-        
+        AppLogger.warning('Folder does not exist: $folderPath');
+
         // Try alternative path formats
         final alternativePaths = _getAlternativePaths(originalPath);
         bool found = false;
         for (final altPath in alternativePaths) {
           final altFolder = Directory(altPath);
           if (await altFolder.exists()) {
-            print('Found alternative path: $altPath');
+            AppLogger.debug('Found alternative path: $altPath');
             await _scanDirectory(altFolder, audioFiles);
             found = true;
             break;
           }
         }
         if (!found) {
-          print('Could not find accessible path for: $originalPath');
+          AppLogger.warning(
+            'Could not find accessible path for: $originalPath',
+          );
         }
         continue;
       }
-      
+
       await _scanDirectory(folder, audioFiles);
     }
-    
-    print('Total audio files found: ${audioFiles.length}');
-    
+
+    AppLogger.info('Total audio files found: ${audioFiles.length}');
+
     return audioFiles;
   }
 
   /// Get alternative path formats to try
   List<String> _getAlternativePaths(String path) {
     final alternatives = <String>[];
-    
+
     // Extract folder name from path
     final segments = path.split(RegExp(r'[/\\]'));
     final folderName = segments.isNotEmpty ? segments.last : '';
-    
+
     if (folderName.isNotEmpty) {
       // Try common Android storage locations
       alternatives.addAll([
@@ -229,47 +240,52 @@ class LocalMusicScanner {
         '/sdcard/Music/$folderName',
       ]);
     }
-    
+
     return alternatives;
   }
 
   /// Scan a directory for audio files
   Future<void> _scanDirectory(Directory folder, List<File> audioFiles) async {
     try {
-      await for (final entity in folder.list(recursive: true, followLinks: false)) {
+      await for (final entity in folder.list(
+        recursive: true,
+        followLinks: false,
+      )) {
         if (entity is File && _isAudioFile(entity.path)) {
           audioFiles.add(entity);
-          print('Found audio file: ${entity.path}');
+          AppLogger.debug('Found audio file: ${entity.path}');
         }
       }
     } catch (e) {
-      print('Error scanning folder ${folder.path}: $e');
+      AppLogger.error('scanning folder ${folder.path}: $e');
     }
   }
 
   /// Get common music directories on the device
   Future<List<String>> getDefaultMusicFolders() async {
     final folders = <String>[];
-    
+
     if (Platform.isAndroid) {
       // Common Android music directories
       final paths = [
         '/storage/emulated/0/Music',
         '/storage/emulated/0/Download',
       ];
-      
+
       for (final path in paths) {
         final dir = Directory(path);
         if (await dir.exists()) {
           folders.add(path);
         }
       }
-      
+
       // Try to get external storage directories
       try {
         final externalDir = await getExternalStorageDirectory();
         if (externalDir != null) {
-          final musicDir = Directory('${externalDir.parent.parent.parent.parent.path}/Music');
+          final musicDir = Directory(
+            '${externalDir.parent.parent.parent.parent.path}/Music',
+          );
           if (await musicDir.exists() && !folders.contains(musicDir.path)) {
             folders.add(musicDir.path);
           }
@@ -281,7 +297,7 @@ class LocalMusicScanner {
       final docDir = await getApplicationDocumentsDirectory();
       folders.add(docDir.path);
     }
-    
+
     return folders.toSet().toList(); // Remove duplicates
   }
 
@@ -290,7 +306,7 @@ class LocalMusicScanner {
   Map<String, String?> _parseFilename(String filename) {
     // Remove extension
     final nameWithoutExt = filename.replaceAll(RegExp(r'\.[^.]+$'), '');
-    
+
     // Try to parse "Artist - Title" format
     final parts = nameWithoutExt.split(' - ');
     if (parts.length >= 2) {
@@ -299,12 +315,9 @@ class LocalMusicScanner {
         'title': parts.sublist(1).join(' - ').trim(),
       };
     }
-    
+
     // Fall back to just using filename as title
-    return {
-      'artist': null,
-      'title': nameWithoutExt.trim(),
-    };
+    return {'artist': null, 'title': nameWithoutExt.trim()};
   }
 
   /// Scan all audio files from default music directories
@@ -327,10 +340,12 @@ class LocalMusicScanner {
       if (!hasPermission) {
         final granted = await requestPermissions();
         if (!granted) {
-          _progressSubject.add(const ScanProgress(
-            isScanning: false,
-            error: 'Storage permission denied',
-          ));
+          _progressSubject.add(
+            const ScanProgress(
+              isScanning: false,
+              error: 'Storage permission denied',
+            ),
+          );
           return const ScanResult(songs: [], albums: [], artists: []);
         }
       }
@@ -339,18 +354,19 @@ class LocalMusicScanner {
       final audioFiles = await _getAudioFiles(folderPaths);
 
       if (audioFiles.isEmpty) {
-        _progressSubject.add(const ScanProgress(
-          isScanning: false,
-          isComplete: true,
-        ));
+        _progressSubject.add(
+          const ScanProgress(isScanning: false, isComplete: true),
+        );
         return const ScanResult(songs: [], albums: [], artists: []);
       }
 
-      _progressSubject.add(ScanProgress(
-        totalFiles: audioFiles.length,
-        scannedFiles: 0,
-        isScanning: true,
-      ));
+      _progressSubject.add(
+        ScanProgress(
+          totalFiles: audioFiles.length,
+          scannedFiles: 0,
+          isScanning: true,
+        ),
+      );
 
       final songs = <Song>[];
       final albumsMap = <String, Album>{};
@@ -359,40 +375,46 @@ class LocalMusicScanner {
       for (int i = 0; i < audioFiles.length; i++) {
         final file = audioFiles[i];
         final fileName = file.path.split('/').last;
-        
-        _progressSubject.add(_progressSubject.value.copyWith(
-          scannedFiles: i + 1,
-          currentFile: fileName,
-        ));
+
+        _progressSubject.add(
+          _progressSubject.value.copyWith(
+            scannedFiles: i + 1,
+            currentFile: fileName,
+          ),
+        );
 
         // Try to extract metadata from the file using native code
         final metadata = await _artworkExtractor.extractMetadata(file.path);
-        
+
         // Parse filename as fallback
         final parsed = _parseFilename(fileName);
-        
+
         // Use metadata if available, fallback to filename parsing
-        String title = metadata?['title'] as String? ?? 
-                       parsed['title'] ?? 
-                       fileName.replaceAll(RegExp(r'\.[^.]+$'), '');
-        String artistName = metadata?['artist'] as String? ?? 
-                           metadata?['albumArtist'] as String? ??
-                           parsed['artist'] ?? 
-                           'Unknown Artist';
+        String title =
+            metadata?['title'] as String? ??
+            parsed['title'] ??
+            fileName.replaceAll(RegExp(r'\.[^.]+$'), '');
+        String artistName =
+            metadata?['artist'] as String? ??
+            metadata?['albumArtist'] as String? ??
+            parsed['artist'] ??
+            'Unknown Artist';
         String albumName = metadata?['album'] as String? ?? 'Unknown Album';
         int? year = metadata?['year'] as int?;
         int? trackNumber = metadata?['trackNumber'] as int?;
-        
+
         // Get duration from metadata (in milliseconds)
         Duration duration = Duration.zero;
         if (metadata?['duration'] != null) {
           duration = Duration(milliseconds: (metadata!['duration'] as int));
         }
-        
+
         // Generate IDs
         final fileId = _generateId(file.path);
         final artistId = _generateId(artistName.toLowerCase());
-        final albumId = _generateId('${artistName.toLowerCase()}_${albumName.toLowerCase()}');
+        final albumId = _generateId(
+          '${artistName.toLowerCase()}_${albumName.toLowerCase()}',
+        );
 
         // Get file modification date
         DateTime dateAdded;
@@ -405,7 +427,9 @@ class LocalMusicScanner {
         // Extract and cache artwork
         String? artworkPath;
         if (metadata?['hasArtwork'] == true) {
-          artworkPath = await _artworkExtractor.extractAndCacheArtwork(file.path);
+          artworkPath = await _artworkExtractor.extractAndCacheArtwork(
+            file.path,
+          );
         }
 
         final song = Song(
@@ -441,7 +465,8 @@ class LocalMusicScanner {
         } else {
           final existingAlbum = albumsMap[albumId]!;
           // Update artwork if this song has one and album doesn't
-          final updatedArtworkPath = existingAlbum.localArtworkPath ?? artworkPath;
+          final updatedArtworkPath =
+              existingAlbum.localArtworkPath ?? artworkPath;
           albumsMap[albumId] = existingAlbum.copyWith(
             songCount: existingAlbum.songCount + 1,
             totalDuration: existingAlbum.totalDuration + song.duration,
@@ -469,12 +494,14 @@ class LocalMusicScanner {
         }
       }
 
-      _progressSubject.add(ScanProgress(
-        totalFiles: audioFiles.length,
-        scannedFiles: audioFiles.length,
-        isScanning: false,
-        isComplete: true,
-      ));
+      _progressSubject.add(
+        ScanProgress(
+          totalFiles: audioFiles.length,
+          scannedFiles: audioFiles.length,
+          isScanning: false,
+          isComplete: true,
+        ),
+      );
 
       return ScanResult(
         songs: songs,
@@ -482,10 +509,9 @@ class LocalMusicScanner {
         artists: artistsMap.values.toList(),
       );
     } catch (e) {
-      _progressSubject.add(ScanProgress(
-        isScanning: false,
-        error: 'Error scanning folders: $e',
-      ));
+      _progressSubject.add(
+        ScanProgress(isScanning: false, error: 'Error scanning folders: $e'),
+      );
       return const ScanResult(songs: [], albums: [], artists: []);
     }
   }

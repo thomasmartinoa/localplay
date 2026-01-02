@@ -2,9 +2,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/entities/entities.dart';
 
 /// Provider for favorite songs
-final favoriteSongsProvider = StateNotifierProvider<FavoriteSongsNotifier, List<Song>>((ref) {
-  return FavoriteSongsNotifier();
-});
+final favoriteSongsProvider =
+    StateNotifierProvider<FavoriteSongsNotifier, List<Song>>((ref) {
+      return FavoriteSongsNotifier();
+    });
 
 class FavoriteSongsNotifier extends StateNotifier<List<Song>> {
   FavoriteSongsNotifier() : super([]);
@@ -39,9 +40,10 @@ final isSongFavoriteProvider = Provider.family<bool, String>((ref, songId) {
 });
 
 /// Provider for recently played songs
-final recentlyPlayedProvider = StateNotifierProvider<RecentlyPlayedNotifier, List<Song>>((ref) {
-  return RecentlyPlayedNotifier();
-});
+final recentlyPlayedProvider =
+    StateNotifierProvider<RecentlyPlayedNotifier, List<Song>>((ref) {
+      return RecentlyPlayedNotifier();
+    });
 
 class RecentlyPlayedNotifier extends StateNotifier<List<Song>> {
   static const int maxRecent = 50;
@@ -62,9 +64,10 @@ class RecentlyPlayedNotifier extends StateNotifier<List<Song>> {
 }
 
 /// Provider for user playlists
-final playlistsProvider = StateNotifierProvider<PlaylistsNotifier, List<Playlist>>((ref) {
-  return PlaylistsNotifier();
-});
+final playlistsProvider =
+    StateNotifierProvider<PlaylistsNotifier, List<Playlist>>((ref) {
+      return PlaylistsNotifier();
+    });
 
 class PlaylistsNotifier extends StateNotifier<List<Playlist>> {
   PlaylistsNotifier() : super([]);
@@ -94,7 +97,10 @@ class PlaylistsNotifier extends StateNotifier<List<Playlist>> {
           return playlist.copyWith(
             songs: songs,
             songCount: songs.length,
-            totalDuration: songs.fold<Duration>(Duration.zero, (total, s) => total + s.duration),
+            totalDuration: songs.fold<Duration>(
+              Duration.zero,
+              (total, s) => total + s.duration,
+            ),
             updatedAt: DateTime.now(),
           );
         }
@@ -110,7 +116,10 @@ class PlaylistsNotifier extends StateNotifier<List<Playlist>> {
         return playlist.copyWith(
           songs: songs,
           songCount: songs.length,
-          totalDuration: songs.fold<Duration>(Duration.zero, (total, s) => total + s.duration),
+          totalDuration: songs.fold<Duration>(
+            Duration.zero,
+            (total, s) => total + s.duration,
+          ),
           updatedAt: DateTime.now(),
         );
       }
@@ -137,7 +146,10 @@ class PlaylistsNotifier extends StateNotifier<List<Playlist>> {
         return playlist.copyWith(
           songs: songs,
           songCount: songs.length,
-          totalDuration: songs.fold<Duration>(Duration.zero, (total, s) => total + s.duration),
+          totalDuration: songs.fold<Duration>(
+            Duration.zero,
+            (total, s) => total + s.duration,
+          ),
           updatedAt: DateTime.now(),
         );
       }

@@ -10,10 +10,7 @@ import '../../providers/library_provider.dart';
 class AddToPlaylistSheet extends ConsumerStatefulWidget {
   final Song song;
 
-  const AddToPlaylistSheet({
-    super.key,
-    required this.song,
-  });
+  const AddToPlaylistSheet({super.key, required this.song});
 
   static Future<void> show(BuildContext context, Song song) {
     return showModalBottomSheet(
@@ -57,14 +54,16 @@ class _AddToPlaylistSheetState extends ConsumerState<AddToPlaylistSheet> {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  AppColors.glassDark.withOpacity(0.95),
-                  AppColors.surfaceDark.withOpacity(0.98),
+                  AppColors.glassDark.withValues(alpha: 0.95),
+                  AppColors.surfaceDark.withValues(alpha: 0.98),
                 ],
               ),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(24),
+              ),
               border: Border(
                 top: BorderSide(
-                  color: AppColors.glassHighlight.withOpacity(0.3),
+                  color: AppColors.glassHighlight.withValues(alpha: 0.3),
                   width: 1,
                 ),
               ),
@@ -79,13 +78,13 @@ class _AddToPlaylistSheetState extends ConsumerState<AddToPlaylistSheet> {
                     width: 40,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: AppColors.glassHighlight.withOpacity(0.5),
+                      color: AppColors.glassHighlight.withValues(alpha: 0.5),
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
                 ),
                 const SizedBox(height: 20),
-                
+
                 // Title
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -102,7 +101,8 @@ class _AddToPlaylistSheetState extends ConsumerState<AddToPlaylistSheet> {
                         ),
                       ),
                       TextButton.icon(
-                        onPressed: () => setState(() => _showCreateNew = !_showCreateNew),
+                        onPressed: () =>
+                            setState(() => _showCreateNew = !_showCreateNew),
                         icon: Icon(
                           _showCreateNew ? Icons.close : Iconsax.add,
                           size: 18,
@@ -126,19 +126,25 @@ class _AddToPlaylistSheetState extends ConsumerState<AddToPlaylistSheet> {
                         Expanded(
                           child: Container(
                             decoration: BoxDecoration(
-                              color: AppColors.glassDark.withOpacity(0.5),
+                              color: AppColors.glassDark.withValues(alpha: 0.5),
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                color: AppColors.glassBorder.withOpacity(0.3),
+                                color: AppColors.glassBorder.withValues(
+                                  alpha: 0.3,
+                                ),
                               ),
                             ),
                             child: TextField(
                               controller: _nameController,
-                              style: const TextStyle(color: AppColors.textPrimaryDark),
+                              style: const TextStyle(
+                                color: AppColors.textPrimaryDark,
+                              ),
                               decoration: InputDecoration(
                                 hintText: 'Playlist name',
                                 hintStyle: TextStyle(
-                                  color: AppColors.textSecondaryDark.withOpacity(0.6),
+                                  color: AppColors.textSecondaryDark.withValues(
+                                    alpha: 0.6,
+                                  ),
                                 ),
                                 border: InputBorder.none,
                                 contentPadding: const EdgeInsets.symmetric(
@@ -154,9 +160,9 @@ class _AddToPlaylistSheetState extends ConsumerState<AddToPlaylistSheet> {
                         GestureDetector(
                           onTap: () {
                             if (_nameController.text.isNotEmpty) {
-                              ref.read(playlistsProvider.notifier).createPlaylist(
-                                _nameController.text,
-                              );
+                              ref
+                                  .read(playlistsProvider.notifier)
+                                  .createPlaylist(_nameController.text);
                               _nameController.clear();
                               setState(() => _showCreateNew = false);
                             }
@@ -169,10 +175,7 @@ class _AddToPlaylistSheetState extends ConsumerState<AddToPlaylistSheet> {
                               ),
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            child: const Icon(
-                              Icons.check,
-                              color: Colors.white,
-                            ),
+                            child: const Icon(Icons.check, color: Colors.white),
                           ),
                         ),
                       ],
@@ -191,13 +194,17 @@ class _AddToPlaylistSheetState extends ConsumerState<AddToPlaylistSheet> {
                               Icon(
                                 Iconsax.music_playlist,
                                 size: 48,
-                                color: AppColors.textSecondaryDark.withOpacity(0.5),
+                                color: AppColors.textSecondaryDark.withValues(
+                                  alpha: 0.5,
+                                ),
                               ),
                               const SizedBox(height: 16),
                               Text(
                                 'No playlists yet',
                                 style: TextStyle(
-                                  color: AppColors.textSecondaryDark.withOpacity(0.7),
+                                  color: AppColors.textSecondaryDark.withValues(
+                                    alpha: 0.7,
+                                  ),
                                   fontSize: 16,
                                 ),
                               ),
@@ -205,7 +212,9 @@ class _AddToPlaylistSheetState extends ConsumerState<AddToPlaylistSheet> {
                               Text(
                                 'Tap "New" to create one',
                                 style: TextStyle(
-                                  color: AppColors.textSecondaryDark.withOpacity(0.5),
+                                  color: AppColors.textSecondaryDark.withValues(
+                                    alpha: 0.5,
+                                  ),
                                   fontSize: 14,
                                 ),
                               ),
@@ -231,8 +240,10 @@ class _AddToPlaylistSheetState extends ConsumerState<AddToPlaylistSheet> {
                                     begin: Alignment.topLeft,
                                     end: Alignment.bottomRight,
                                     colors: [
-                                      AppColors.primary.withOpacity(0.3),
-                                      AppColors.primaryDark.withOpacity(0.2),
+                                      AppColors.primary.withValues(alpha: 0.3),
+                                      AppColors.primaryDark.withValues(
+                                        alpha: 0.2,
+                                      ),
                                     ],
                                   ),
                                   borderRadius: BorderRadius.circular(10),
@@ -252,7 +263,9 @@ class _AddToPlaylistSheetState extends ConsumerState<AddToPlaylistSheet> {
                               subtitle: Text(
                                 '${playlist.songCount} songs',
                                 style: TextStyle(
-                                  color: AppColors.textSecondaryDark.withOpacity(0.7),
+                                  color: AppColors.textSecondaryDark.withValues(
+                                    alpha: 0.7,
+                                  ),
                                   fontSize: 13,
                                 ),
                               ),
@@ -263,19 +276,24 @@ class _AddToPlaylistSheetState extends ConsumerState<AddToPlaylistSheet> {
                                     )
                                   : Icon(
                                       Icons.add_circle_outline,
-                                      color: AppColors.textSecondaryDark.withOpacity(0.5),
+                                      color: AppColors.textSecondaryDark
+                                          .withValues(alpha: 0.5),
                                     ),
                               onTap: () {
                                 if (isInPlaylist) {
-                                  ref.read(playlistsProvider.notifier).removeSongFromPlaylist(
-                                    playlist.id,
-                                    widget.song.id,
-                                  );
+                                  ref
+                                      .read(playlistsProvider.notifier)
+                                      .removeSongFromPlaylist(
+                                        playlist.id,
+                                        widget.song.id,
+                                      );
                                 } else {
-                                  ref.read(playlistsProvider.notifier).addSongToPlaylist(
-                                    playlist.id,
-                                    widget.song,
-                                  );
+                                  ref
+                                      .read(playlistsProvider.notifier)
+                                      .addSongToPlaylist(
+                                        playlist.id,
+                                        widget.song,
+                                      );
                                 }
                                 Navigator.pop(context);
                                 ScaffoldMessenger.of(context).showSnackBar(

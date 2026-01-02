@@ -5,6 +5,7 @@ import 'package:file_picker/file_picker.dart';
 import '../../domain/entities/entities.dart';
 import '../../data/adapters/hive_adapters.dart';
 import '../../services/local_music/local_music_scanner.dart';
+import '../../core/utils/app_logger.dart';
 
 /// Local music scanner provider
 final localMusicScannerProvider = Provider<LocalMusicScanner>((ref) {
@@ -20,9 +21,10 @@ final scanProgressProvider = StreamProvider<ScanProgress>((ref) {
 });
 
 /// Local songs provider
-final localSongsProvider = StateNotifierProvider<LocalSongsNotifier, List<Song>>((ref) {
-  return LocalSongsNotifier();
-});
+final localSongsProvider =
+    StateNotifierProvider<LocalSongsNotifier, List<Song>>((ref) {
+      return LocalSongsNotifier();
+    });
 
 class LocalSongsNotifier extends StateNotifier<List<Song>> {
   Box<Song>? _songsBox;
@@ -36,7 +38,7 @@ class LocalSongsNotifier extends StateNotifier<List<Song>> {
       _songsBox = await Hive.openBox<Song>(HiveBoxes.songs);
       state = _songsBox!.values.toList();
     } catch (e) {
-      print('Error loading songs: $e');
+      AppLogger.error('loading songs: $e');
     }
   }
 
@@ -44,26 +46,26 @@ class LocalSongsNotifier extends StateNotifier<List<Song>> {
     try {
       _songsBox ??= await Hive.openBox<Song>(HiveBoxes.songs);
       await _songsBox!.clear();
-      
+
       final songsMap = {for (var s in songs) s.id: s};
       await _songsBox!.putAll(songsMap);
-      
+
       state = songs;
     } catch (e) {
-      print('Error saving songs: $e');
+      AppLogger.error('saving songs: $e');
     }
   }
 
   Future<void> addSongs(List<Song> songs) async {
     try {
       _songsBox ??= await Hive.openBox<Song>(HiveBoxes.songs);
-      
+
       final songsMap = {for (var s in songs) s.id: s};
       await _songsBox!.putAll(songsMap);
-      
+
       state = [...state, ...songs];
     } catch (e) {
-      print('Error adding songs: $e');
+      AppLogger.error('adding songs: $e');
     }
   }
 
@@ -71,10 +73,10 @@ class LocalSongsNotifier extends StateNotifier<List<Song>> {
     try {
       _songsBox ??= await Hive.openBox<Song>(HiveBoxes.songs);
       await _songsBox!.put(song.id, song);
-      
+
       state = state.map((s) => s.id == song.id ? song : s).toList();
     } catch (e) {
-      print('Error updating song: $e');
+      AppLogger.error('updating song: $e');
     }
   }
 
@@ -84,7 +86,7 @@ class LocalSongsNotifier extends StateNotifier<List<Song>> {
       await _songsBox!.clear();
       state = [];
     } catch (e) {
-      print('Error clearing songs: $e');
+      AppLogger.error('clearing songs: $e');
     }
   }
 
@@ -92,24 +94,26 @@ class LocalSongsNotifier extends StateNotifier<List<Song>> {
   Future<void> removeSongsFromFolder(String folderPath) async {
     try {
       _songsBox ??= await Hive.openBox<Song>(HiveBoxes.songs);
-      
+
       // Normalize the folder path for comparison
       final normalizedFolder = folderPath.replaceAll('\\', '/');
-      
+
       // Find songs that belong to this folder
       final songsToRemove = state.where((song) {
         if (song.filePath == null) return false;
         final normalizedSongPath = song.filePath!.replaceAll('\\', '/');
         return normalizedSongPath.startsWith(normalizedFolder);
       }).toList();
-      
-      print('Removing ${songsToRemove.length} songs from folder: $folderPath');
-      
+
+      AppLogger.info(
+        'Removing ${songsToRemove.length} songs from folder: $folderPath',
+      );
+
       // Remove from Hive
       for (final song in songsToRemove) {
         await _songsBox!.delete(song.id);
       }
-      
+
       // Update state
       state = state.where((song) {
         if (song.filePath == null) return true;
@@ -117,14 +121,14 @@ class LocalSongsNotifier extends StateNotifier<List<Song>> {
         return !normalizedSongPath.startsWith(normalizedFolder);
       }).toList();
     } catch (e) {
-      print('Error removing songs from folder: $e');
+      AppLogger.error('removing songs from folder: $e');
     }
   }
 
   /// Get songs from specific folder paths only
   List<Song> getSongsFromFolders(List<String> folderPaths) {
     if (folderPaths.isEmpty) return [];
-    
+
     return state.where((song) {
       if (song.filePath == null) return false;
       final normalizedSongPath = song.filePath!.replaceAll('\\', '/');
@@ -138,18 +142,22 @@ class LocalSongsNotifier extends StateNotifier<List<Song>> {
   List<Song> searchSongs(String query) {
     if (query.isEmpty) return state;
     final lowerQuery = query.toLowerCase();
-    return state.where((song) =>
-      song.title.toLowerCase().contains(lowerQuery) ||
-      song.artist.toLowerCase().contains(lowerQuery) ||
-      song.album.toLowerCase().contains(lowerQuery)
-    ).toList();
+    return state
+        .where(
+          (song) =>
+              song.title.toLowerCase().contains(lowerQuery) ||
+              song.artist.toLowerCase().contains(lowerQuery) ||
+              song.album.toLowerCase().contains(lowerQuery),
+        )
+        .toList();
   }
 }
 
 /// Local albums provider
-final localAlbumsProvider = StateNotifierProvider<LocalAlbumsNotifier, List<Album>>((ref) {
-  return LocalAlbumsNotifier();
-});
+final localAlbumsProvider =
+    StateNotifierProvider<LocalAlbumsNotifier, List<Album>>((ref) {
+      return LocalAlbumsNotifier();
+    });
 
 class LocalAlbumsNotifier extends StateNotifier<List<Album>> {
   Box<Album>? _albumsBox;
@@ -163,7 +171,7 @@ class LocalAlbumsNotifier extends StateNotifier<List<Album>> {
       _albumsBox = await Hive.openBox<Album>(HiveBoxes.albums);
       state = _albumsBox!.values.toList();
     } catch (e) {
-      print('Error loading albums: $e');
+      AppLogger.error('loading albums: $e');
     }
   }
 
@@ -171,13 +179,13 @@ class LocalAlbumsNotifier extends StateNotifier<List<Album>> {
     try {
       _albumsBox ??= await Hive.openBox<Album>(HiveBoxes.albums);
       await _albumsBox!.clear();
-      
+
       final albumsMap = {for (var a in albums) a.id: a};
       await _albumsBox!.putAll(albumsMap);
-      
+
       state = albums;
     } catch (e) {
-      print('Error saving albums: $e');
+      AppLogger.error('saving albums: $e');
     }
   }
 
@@ -187,15 +195,16 @@ class LocalAlbumsNotifier extends StateNotifier<List<Album>> {
       await _albumsBox!.clear();
       state = [];
     } catch (e) {
-      print('Error clearing albums: $e');
+      AppLogger.error('clearing albums: $e');
     }
   }
 }
 
 /// Local artists provider
-final localArtistsProvider = StateNotifierProvider<LocalArtistsNotifier, List<Artist>>((ref) {
-  return LocalArtistsNotifier();
-});
+final localArtistsProvider =
+    StateNotifierProvider<LocalArtistsNotifier, List<Artist>>((ref) {
+      return LocalArtistsNotifier();
+    });
 
 class LocalArtistsNotifier extends StateNotifier<List<Artist>> {
   Box<Artist>? _artistsBox;
@@ -209,7 +218,7 @@ class LocalArtistsNotifier extends StateNotifier<List<Artist>> {
       _artistsBox = await Hive.openBox<Artist>(HiveBoxes.artists);
       state = _artistsBox!.values.toList();
     } catch (e) {
-      print('Error loading artists: $e');
+      AppLogger.error('loading artists: $e');
     }
   }
 
@@ -217,13 +226,13 @@ class LocalArtistsNotifier extends StateNotifier<List<Artist>> {
     try {
       _artistsBox ??= await Hive.openBox<Artist>(HiveBoxes.artists);
       await _artistsBox!.clear();
-      
+
       final artistsMap = {for (var a in artists) a.id: a};
       await _artistsBox!.putAll(artistsMap);
-      
+
       state = artists;
     } catch (e) {
-      print('Error saving artists: $e');
+      AppLogger.error('saving artists: $e');
     }
   }
 
@@ -233,15 +242,16 @@ class LocalArtistsNotifier extends StateNotifier<List<Artist>> {
       await _artistsBox!.clear();
       state = [];
     } catch (e) {
-      print('Error clearing artists: $e');
+      AppLogger.error('clearing artists: $e');
     }
   }
 }
 
 /// Scan folders provider
-final scanFoldersProvider = StateNotifierProvider<ScanFoldersNotifier, List<ScanFolder>>((ref) {
-  return ScanFoldersNotifier();
-});
+final scanFoldersProvider =
+    StateNotifierProvider<ScanFoldersNotifier, List<ScanFolder>>((ref) {
+      return ScanFoldersNotifier();
+    });
 
 class ScanFoldersNotifier extends StateNotifier<List<ScanFolder>> {
   Box<ScanFolder>? _foldersBox;
@@ -255,21 +265,21 @@ class ScanFoldersNotifier extends StateNotifier<List<ScanFolder>> {
       _foldersBox = await Hive.openBox<ScanFolder>(HiveBoxes.scanFolders);
       state = _foldersBox!.values.toList();
     } catch (e) {
-      print('Error loading folders: $e');
+      AppLogger.error('loading folders: $e');
     }
   }
 
   Future<void> addFolder(ScanFolder folder) async {
     try {
       _foldersBox ??= await Hive.openBox<ScanFolder>(HiveBoxes.scanFolders);
-      
+
       // Check if folder already exists
       if (state.any((f) => f.path == folder.path)) return;
-      
+
       await _foldersBox!.put(folder.path, folder);
       state = [...state, folder];
     } catch (e) {
-      print('Error adding folder: $e');
+      AppLogger.error('adding folder: $e');
     }
   }
 
@@ -279,7 +289,7 @@ class ScanFoldersNotifier extends StateNotifier<List<ScanFolder>> {
       await _foldersBox!.delete(path);
       state = state.where((f) => f.path != path).toList();
     } catch (e) {
-      print('Error removing folder: $e');
+      AppLogger.error('removing folder: $e');
     }
   }
 
@@ -291,17 +301,25 @@ class ScanFoldersNotifier extends StateNotifier<List<ScanFolder>> {
       await _foldersBox!.put(path, updated);
       state = state.map((f) => f.path == path ? updated : f).toList();
     } catch (e) {
-      print('Error toggling folder: $e');
+      AppLogger.error('toggling folder: $e');
     }
   }
 
   /// Check if folder is enabled
   bool isFolderEnabled(String path) {
-    final folder = state.firstWhere((f) => f.path == path, orElse: () => ScanFolder(path: '', name: '', addedAt: DateTime.now(), isEnabled: false));
+    final folder = state.firstWhere(
+      (f) => f.path == path,
+      orElse: () => ScanFolder(
+        path: '',
+        name: '',
+        addedAt: DateTime.now(),
+        isEnabled: false,
+      ),
+    );
     return folder.isEnabled;
   }
 
-  List<String> get enabledFolderPaths => 
+  List<String> get enabledFolderPaths =>
       state.where((f) => f.isEnabled).map((f) => f.path).toList();
 }
 
@@ -317,7 +335,7 @@ String _normalizeFolderPath(String path) {
       return '/storage/emulated/0/$relativePath';
     }
   }
-  
+
   // Handle /tree/ or /document/ paths
   if (path.contains('/tree/') || path.contains('/document/')) {
     final match = RegExp(r'primary[:%](.+)$').firstMatch(path);
@@ -326,7 +344,7 @@ String _normalizeFolderPath(String path) {
       return '/storage/emulated/0/$relativePath';
     }
   }
-  
+
   return path;
 }
 
@@ -335,189 +353,237 @@ final pickFolderProvider = Provider<Future<String?> Function()>((ref) {
   return () async {
     try {
       final result = await FilePicker.platform.getDirectoryPath();
-      print('Raw picked folder path: $result');
-      
+      AppLogger.debug('picked folder path: $result');
+
       if (result != null) {
         // Normalize the path for Android
         String normalizedPath = result;
         if (Platform.isAndroid) {
           normalizedPath = _normalizeFolderPath(result);
-          print('Normalized path: $normalizedPath');
+          AppLogger.debug('path: $normalizedPath');
         }
-        
+
         // Verify the directory exists
         final dir = Directory(normalizedPath);
         final exists = await dir.exists();
-        print('Directory exists: $exists');
-        
+        AppLogger.debug('exists: $exists');
+
         if (!exists) {
-          print('Warning: Selected directory does not exist or is not accessible');
-          print('Trying to list files in: $normalizedPath');
-          
+          AppLogger.warning(
+            'Selected directory does not exist or is not accessible',
+          );
+          AppLogger.debug('Trying to list files in: $normalizedPath');
+
           // Still return the normalized path - the scanner will try alternative paths
         }
-        
+
         return normalizedPath;
       }
-      
+
       return result;
     } catch (e) {
-      print('Error picking folder: $e');
+      AppLogger.error('picking folder: $e');
       return null;
     }
   };
 });
 
 /// Scan music action provider
-final scanMusicActionProvider = Provider<Future<void> Function({bool useSelectedFolders})>((ref) {
-  return ({bool useSelectedFolders = false}) async {
-    final scanner = ref.read(localMusicScannerProvider);
-    final folders = ref.read(scanFoldersProvider);
-    
-    ScanResult result;
-    
-    if (useSelectedFolders) {
-      // Get only enabled folder paths
-      final enabledPaths = folders
-          .where((f) => f.isEnabled)
-          .map((f) => f.path)
-          .toList();
-      
-      print('Scanning selected folders: $enabledPaths');
-      print('Total folders: ${folders.length}, Enabled: ${enabledPaths.length}');
-      
-      if (enabledPaths.isEmpty) {
-        print('No enabled folders found, returning empty result');
-        // Don't scan all music, just return empty if no folders selected
-        result = const ScanResult(songs: [], albums: [], artists: []);
-      } else {
-        result = await scanner.scanFolders(enabledPaths);
-      }
-    } else {
-      print('Scanning all music on device');
-      result = await scanner.scanAllMusic();
-    }
-    
-    print('Scan complete: ${result.songs.length} songs, ${result.albums.length} albums, ${result.artists.length} artists');
-    
-    // Save results
-    await ref.read(localSongsProvider.notifier).setSongs(result.songs);
-    await ref.read(localAlbumsProvider.notifier).setAlbums(result.albums);
-    await ref.read(localArtistsProvider.notifier).setArtists(result.artists);
-  };
-});
+final scanMusicActionProvider =
+    Provider<Future<void> Function({bool useSelectedFolders})>((ref) {
+      return ({bool useSelectedFolders = false}) async {
+        final scanner = ref.read(localMusicScannerProvider);
+        final folders = ref.read(scanFoldersProvider);
+
+        ScanResult result;
+
+        if (useSelectedFolders) {
+          // Get only enabled folder paths
+          final enabledPaths = folders
+              .where((f) => f.isEnabled)
+              .map((f) => f.path)
+              .toList();
+
+          AppLogger.info('Scanning selected folders: $enabledPaths');
+          AppLogger.debug(
+            'Total folders: ${folders.length}, Enabled: ${enabledPaths.length}',
+          );
+
+          if (enabledPaths.isEmpty) {
+            AppLogger.info('No enabled folders found, returning empty result');
+            // Don't scan all music, just return empty if no folders selected
+            result = const ScanResult(songs: [], albums: [], artists: []);
+          } else {
+            result = await scanner.scanFolders(enabledPaths);
+          }
+        } else {
+          AppLogger.info('Scanning all music on device');
+          result = await scanner.scanAllMusic();
+        }
+
+        AppLogger.info(
+          'Scan complete: ${result.songs.length} songs, ${result.albums.length} albums, ${result.artists.length} artists',
+        );
+
+        // Save results
+        await ref.read(localSongsProvider.notifier).setSongs(result.songs);
+        await ref.read(localAlbumsProvider.notifier).setAlbums(result.albums);
+        await ref
+            .read(localArtistsProvider.notifier)
+            .setArtists(result.artists);
+      };
+    });
 
 /// Scan a single folder and add to existing library
-final scanSingleFolderProvider = Provider<Future<void> Function(String folderPath)>((ref) {
-  return (String folderPath) async {
-    final scanner = ref.read(localMusicScannerProvider);
-    
-    print('Scanning single folder: $folderPath');
-    
-    final result = await scanner.scanFolders([folderPath]);
-    
-    print('Single folder scan complete: ${result.songs.length} songs');
-    
-    if (result.songs.isNotEmpty) {
-      // Add songs to existing library (not replace)
-      await ref.read(localSongsProvider.notifier).addSongs(result.songs);
-      
-      // For albums and artists, we need to merge with existing
-      final existingAlbums = ref.read(localAlbumsProvider);
-      final existingArtists = ref.read(localArtistsProvider);
-      
-      // Add new albums that don't exist
-      final newAlbums = result.albums.where((a) => 
-        !existingAlbums.any((ea) => ea.id == a.id)
-      ).toList();
-      
-      // Add new artists that don't exist
-      final newArtists = result.artists.where((a) => 
-        !existingArtists.any((ea) => ea.id == a.id)
-      ).toList();
-      
-      if (newAlbums.isNotEmpty) {
-        await ref.read(localAlbumsProvider.notifier).setAlbums([...existingAlbums, ...newAlbums]);
-      }
-      if (newArtists.isNotEmpty) {
-        await ref.read(localArtistsProvider.notifier).setArtists([...existingArtists, ...newArtists]);
-      }
-    }
-  };
-});
+final scanSingleFolderProvider =
+    Provider<Future<void> Function(String folderPath)>((ref) {
+      return (String folderPath) async {
+        final scanner = ref.read(localMusicScannerProvider);
+
+        AppLogger.info('Scanning single folder: $folderPath');
+
+        final result = await scanner.scanFolders([folderPath]);
+
+        AppLogger.info(
+          'Single folder scan complete: ${result.songs.length} songs',
+        );
+
+        if (result.songs.isNotEmpty) {
+          // Add songs to existing library (not replace)
+          await ref.read(localSongsProvider.notifier).addSongs(result.songs);
+
+          // For albums and artists, we need to merge with existing
+          final existingAlbums = ref.read(localAlbumsProvider);
+          final existingArtists = ref.read(localArtistsProvider);
+
+          // Add new albums that don't exist
+          final newAlbums = result.albums
+              .where((a) => !existingAlbums.any((ea) => ea.id == a.id))
+              .toList();
+
+          // Add new artists that don't exist
+          final newArtists = result.artists
+              .where((a) => !existingArtists.any((ea) => ea.id == a.id))
+              .toList();
+
+          if (newAlbums.isNotEmpty) {
+            await ref.read(localAlbumsProvider.notifier).setAlbums([
+              ...existingAlbums,
+              ...newAlbums,
+            ]);
+          }
+          if (newArtists.isNotEmpty) {
+            await ref.read(localArtistsProvider.notifier).setArtists([
+              ...existingArtists,
+              ...newArtists,
+            ]);
+          }
+        }
+      };
+    });
 
 /// Remove songs from a folder when folder is deleted or disabled
-final removeFolderSongsProvider = Provider<Future<void> Function(String folderPath)>((ref) {
-  return (String folderPath) async {
-    print('Removing songs from folder: $folderPath');
-    await ref.read(localSongsProvider.notifier).removeSongsFromFolder(folderPath);
-    
-    // Rebuild albums and artists based on remaining songs
-    final remainingSongs = ref.read(localSongsProvider);
-    
-    // Get unique album IDs from remaining songs
-    final remainingAlbumIds = remainingSongs
-        .where((s) => s.albumId != null)
-        .map((s) => s.albumId!)
-        .toSet();
-    
-    // Get unique artist IDs from remaining songs
-    final remainingArtistIds = remainingSongs
-        .where((s) => s.artistId != null)
-        .map((s) => s.artistId!)
-        .toSet();
-    
-    // Filter albums to only keep those with songs
-    final currentAlbums = ref.read(localAlbumsProvider);
-    final filteredAlbums = currentAlbums.where((a) => remainingAlbumIds.contains(a.id)).toList();
-    await ref.read(localAlbumsProvider.notifier).setAlbums(filteredAlbums);
-    
-    // Filter artists to only keep those with songs
-    final currentArtists = ref.read(localArtistsProvider);
-    final filteredArtists = currentArtists.where((a) => remainingArtistIds.contains(a.id)).toList();
-    await ref.read(localArtistsProvider.notifier).setArtists(filteredArtists);
-    
-    print('Cleanup complete. Remaining: ${remainingSongs.length} songs, ${filteredAlbums.length} albums, ${filteredArtists.length} artists');
-  };
-});
+final removeFolderSongsProvider =
+    Provider<Future<void> Function(String folderPath)>((ref) {
+      return (String folderPath) async {
+        AppLogger.info('Removing songs from folder: $folderPath');
+        await ref
+            .read(localSongsProvider.notifier)
+            .removeSongsFromFolder(folderPath);
+
+        // Rebuild albums and artists based on remaining songs
+        final remainingSongs = ref.read(localSongsProvider);
+
+        // Get unique album IDs from remaining songs
+        final remainingAlbumIds = remainingSongs
+            .where((s) => s.albumId != null)
+            .map((s) => s.albumId!)
+            .toSet();
+
+        // Get unique artist IDs from remaining songs
+        final remainingArtistIds = remainingSongs
+            .where((s) => s.artistId != null)
+            .map((s) => s.artistId!)
+            .toSet();
+
+        // Filter albums to only keep those with songs
+        final currentAlbums = ref.read(localAlbumsProvider);
+        final filteredAlbums = currentAlbums
+            .where((a) => remainingAlbumIds.contains(a.id))
+            .toList();
+        await ref.read(localAlbumsProvider.notifier).setAlbums(filteredAlbums);
+
+        // Filter artists to only keep those with songs
+        final currentArtists = ref.read(localArtistsProvider);
+        final filteredArtists = currentArtists
+            .where((a) => remainingArtistIds.contains(a.id))
+            .toList();
+        await ref
+            .read(localArtistsProvider.notifier)
+            .setArtists(filteredArtists);
+
+        AppLogger.info(
+          'Cleanup complete. Remaining: ${remainingSongs.length} songs, ${filteredAlbums.length} albums, ${filteredArtists.length} artists',
+        );
+      };
+    });
 
 /// Recently added songs (last 50)
 final recentlyAddedSongsProvider = Provider<List<Song>>((ref) {
   final songs = ref.watch(localSongsProvider);
   final sorted = List<Song>.from(songs)
-    ..sort((a, b) => (b.dateAdded ?? DateTime(1970)).compareTo(a.dateAdded ?? DateTime(1970)));
+    ..sort(
+      (a, b) => (b.dateAdded ?? DateTime(1970)).compareTo(
+        a.dateAdded ?? DateTime(1970),
+      ),
+    );
   return sorted.take(50).toList();
 });
 
 /// Songs by album provider
-final songsByAlbumProvider = Provider.family<List<Song>, String>((ref, albumId) {
+final songsByAlbumProvider = Provider.family<List<Song>, String>((
+  ref,
+  albumId,
+) {
   final songs = ref.watch(localSongsProvider);
   return songs.where((s) => s.albumId == albumId).toList()
     ..sort((a, b) => (a.trackNumber ?? 0).compareTo(b.trackNumber ?? 0));
 });
 
 /// Songs by artist provider
-final songsByArtistProvider = Provider.family<List<Song>, String>((ref, artistId) {
+final songsByArtistProvider = Provider.family<List<Song>, String>((
+  ref,
+  artistId,
+) {
   final songs = ref.watch(localSongsProvider);
   return songs.where((s) => s.artistId == artistId).toList();
 });
 
 /// Albums by artist provider
-final albumsByArtistProvider = Provider.family<List<Album>, String>((ref, artistId) {
+final albumsByArtistProvider = Provider.family<List<Album>, String>((
+  ref,
+  artistId,
+) {
   final albums = ref.watch(localAlbumsProvider);
   return albums.where((a) => a.artistId == artistId).toList();
 });
 
 /// Search songs provider
-final searchLocalSongsProvider = Provider.family<List<Song>, String>((ref, query) {
+final searchLocalSongsProvider = Provider.family<List<Song>, String>((
+  ref,
+  query,
+) {
   if (query.isEmpty) return [];
   final songs = ref.watch(localSongsProvider);
   final lowerQuery = query.toLowerCase();
-  return songs.where((song) =>
-    song.title.toLowerCase().contains(lowerQuery) ||
-    song.artist.toLowerCase().contains(lowerQuery) ||
-    song.album.toLowerCase().contains(lowerQuery)
-  ).toList();
+  return songs
+      .where(
+        (song) =>
+            song.title.toLowerCase().contains(lowerQuery) ||
+            song.artist.toLowerCase().contains(lowerQuery) ||
+            song.album.toLowerCase().contains(lowerQuery),
+      )
+      .toList();
 });
 
 /// Music library stats provider
@@ -525,7 +591,7 @@ final libraryStatsProvider = Provider<Map<String, int>>((ref) {
   final songs = ref.watch(localSongsProvider);
   final albums = ref.watch(localAlbumsProvider);
   final artists = ref.watch(localArtistsProvider);
-  
+
   return {
     'songs': songs.length,
     'albums': albums.length,
@@ -537,7 +603,7 @@ final libraryStatsProvider = Provider<Map<String, int>>((ref) {
 final genresProvider = Provider<List<String>>((ref) {
   final songs = ref.watch(localSongsProvider);
   final genres = <String>{};
-  
+
   for (final song in songs) {
     if (song.genre != null && song.genre!.isNotEmpty) {
       // Handle multiple genres separated by common delimiters
@@ -550,8 +616,9 @@ final genresProvider = Provider<List<String>>((ref) {
       }
     }
   }
-  
-  final sortedGenres = genres.toList()..sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
+
+  final sortedGenres = genres.toList()
+    ..sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
   return sortedGenres;
 });
 
@@ -559,11 +626,15 @@ final genresProvider = Provider<List<String>>((ref) {
 final songsByGenreProvider = Provider.family<List<Song>, String>((ref, genre) {
   final songs = ref.watch(localSongsProvider);
   final lowerGenre = genre.toLowerCase();
-  
+
   return songs.where((song) {
-    if (song.genre == null || song.genre!.isEmpty) return false;
-    return song.genre!.toLowerCase().contains(lowerGenre);
-  }).toList()
+      if (song.genre == null || song.genre!.isEmpty) return false;
+      // Split by common delimiters and check if any match the genre
+      final songGenres = song.genre!
+          .split(RegExp(r'[,;/]'))
+          .map((g) => g.trim().toLowerCase());
+      return songGenres.contains(lowerGenre);
+    }).toList()
     ..sort((a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()));
 });
 
@@ -571,7 +642,7 @@ final songsByGenreProvider = Provider.family<List<Song>, String>((ref, genre) {
 class GenreInfo {
   final String name;
   final int songCount;
-  
+
   const GenreInfo({required this.name, required this.songCount});
 }
 
@@ -579,7 +650,7 @@ class GenreInfo {
 final genresWithCountProvider = Provider<List<GenreInfo>>((ref) {
   final songs = ref.watch(localSongsProvider);
   final genreCounts = <String, int>{};
-  
+
   for (final song in songs) {
     if (song.genre != null && song.genre!.isNotEmpty) {
       final songGenres = song.genre!.split(RegExp(r'[,;/]'));
@@ -591,11 +662,14 @@ final genresWithCountProvider = Provider<List<GenreInfo>>((ref) {
       }
     }
   }
-  
-  final genreInfos = genreCounts.entries
-      .map((e) => GenreInfo(name: e.key, songCount: e.value))
-      .toList()
-    ..sort((a, b) => b.songCount.compareTo(a.songCount)); // Sort by count descending
-  
+
+  final genreInfos =
+      genreCounts.entries
+          .map((e) => GenreInfo(name: e.key, songCount: e.value))
+          .toList()
+        ..sort(
+          (a, b) => b.songCount.compareTo(a.songCount),
+        ); // Sort by count descending
+
   return genreInfos;
 });

@@ -12,11 +12,7 @@ class AlbumScreen extends ConsumerWidget {
   final String albumId;
   final Album? album;
 
-  const AlbumScreen({
-    super.key,
-    required this.albumId,
-    this.album,
-  });
+  const AlbumScreen({super.key, required this.albumId, this.album});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -26,9 +22,7 @@ class AlbumScreen extends ConsumerWidget {
     if (displayAlbum == null) {
       return Scaffold(
         backgroundColor: AppColors.backgroundDark,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-        ),
+        appBar: AppBar(backgroundColor: Colors.transparent),
         body: const Center(
           child: CircularProgressIndicator(color: AppColors.primary),
         ),
@@ -62,7 +56,7 @@ class AlbumScreen extends ConsumerWidget {
                         end: Alignment.bottomCenter,
                         colors: [
                           Colors.transparent,
-                          AppColors.backgroundDark.withOpacity(0.8),
+                          AppColors.backgroundDark.withValues(alpha: 0.8),
                           AppColors.backgroundDark,
                         ],
                       ),
@@ -161,20 +155,20 @@ class AlbumScreen extends ConsumerWidget {
             )
           else
             SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  final song = displayAlbum.songs[index];
-                  return SongTile(
-                    song: song,
-                    showAlbumArt: false,
-                    showTrackNumber: true,
-                    onTap: () {
-                      audioService.playQueue(displayAlbum.songs, startIndex: index);
-                    },
-                  );
-                },
-                childCount: displayAlbum.songs.length,
-              ),
+              delegate: SliverChildBuilderDelegate((context, index) {
+                final song = displayAlbum.songs[index];
+                return SongTile(
+                  song: song,
+                  showAlbumArt: false,
+                  showTrackNumber: true,
+                  onTap: () {
+                    audioService.playQueue(
+                      displayAlbum.songs,
+                      startIndex: index,
+                    );
+                  },
+                );
+              }, childCount: displayAlbum.songs.length),
             ),
 
           // Album info footer
@@ -207,9 +201,7 @@ class AlbumScreen extends ConsumerWidget {
           ),
 
           // Bottom padding
-          const SliverToBoxAdapter(
-            child: SizedBox(height: 100),
-          ),
+          const SliverToBoxAdapter(child: SizedBox(height: 100)),
         ],
       ),
     );
