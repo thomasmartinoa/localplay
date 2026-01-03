@@ -172,12 +172,28 @@ class AudioPlayerService {
         await _player.setUrl(song.audioUrl!);
       } else {
         AppLogger.warning('No audio source available for song: ${song.title}');
+        // Auto-skip to next song if current song has no source
+        if (_hasNext()) {
+          AppLogger.info('Auto-skipping to next song');
+          await next();
+        }
         return;
       }
       _updateState();
     } catch (e) {
       // Handle error - maybe the file or URL is invalid
-      AppLogger.error('loading song: $e');
+      AppLogger.error('Error loading song ${song.title}: $e');
+      
+      // Auto-skip to next song on error
+      if (_hasNext()) {
+        AppLogger.info('Auto-skipping to next song due to load error');
+        await Future.delayed(const Duration(milliseconds: 500)); // Small delay before skipping
+        await next();
+      } else {
+        // No more songs, just stop
+        AppLogger.warning('No more songs in queue, stopping playback');
+        await stop();
+      }
     }
   }
 

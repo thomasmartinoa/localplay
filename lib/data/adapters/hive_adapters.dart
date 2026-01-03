@@ -8,6 +8,7 @@ class HiveTypeIds {
   static const int artist = 2;
   static const int playlist = 3;
   static const int scanFolder = 4;
+  static const int playlistType = 5;
 }
 
 /// Song adapter for Hive
@@ -272,11 +273,93 @@ class ScanFolderAdapter extends TypeAdapter<ScanFolder> {
   }
 }
 
+/// Playlist adapter for Hive
+class PlaylistAdapter extends TypeAdapter<Playlist> {
+  @override
+  final int typeId = HiveTypeIds.playlist;
+
+  @override
+  Playlist read(BinaryReader reader) {
+    final numOfFields = reader.readByte();
+    final fields = <int, dynamic>{
+      for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
+    };
+    return Playlist(
+      id: fields[0] as String,
+      name: fields[1] as String,
+      description: fields[2] as String?,
+      artworkUrl: fields[3] as String?,
+      creatorId: fields[4] as String?,
+      creatorName: fields[5] as String?,
+      songs: (fields[6] as List?)?.cast<Song>() ?? [],
+      songCount: fields[7] as int? ?? 0,
+      totalDuration: Duration(milliseconds: fields[8] as int? ?? 0),
+      isPublic: fields[9] as bool? ?? false,
+      isEditable: fields[10] as bool? ?? true,
+      createdAt: DateTime.fromMillisecondsSinceEpoch(fields[11] as int),
+      updatedAt: DateTime.fromMillisecondsSinceEpoch(fields[12] as int),
+      type: PlaylistType.values[fields[13] as int? ?? 0],
+    );
+  }
+
+  @override
+  void write(BinaryWriter writer, Playlist obj) {
+    writer
+      ..writeByte(14)
+      ..writeByte(0)
+      ..write(obj.id)
+      ..writeByte(1)
+      ..write(obj.name)
+      ..writeByte(2)
+      ..write(obj.description)
+      ..writeByte(3)
+      ..write(obj.artworkUrl)
+      ..writeByte(4)
+      ..write(obj.creatorId)
+      ..writeByte(5)
+      ..write(obj.creatorName)
+      ..writeByte(6)
+      ..write(obj.songs)
+      ..writeByte(7)
+      ..write(obj.songCount)
+      ..writeByte(8)
+      ..write(obj.totalDuration.inMilliseconds)
+      ..writeByte(9)
+      ..write(obj.isPublic)
+      ..writeByte(10)
+      ..write(obj.isEditable)
+      ..writeByte(11)
+      ..write(obj.createdAt.millisecondsSinceEpoch)
+      ..writeByte(12)
+      ..write(obj.updatedAt.millisecondsSinceEpoch)
+      ..writeByte(13)
+      ..write(obj.type.index);
+  }
+}
+
+/// PlaylistType adapter for Hive
+class PlaylistTypeAdapter extends TypeAdapter<PlaylistType> {
+  @override
+  final int typeId = HiveTypeIds.playlistType;
+
+  @override
+  PlaylistType read(BinaryReader reader) {
+    return PlaylistType.values[reader.readByte()];
+  }
+
+  @override
+  void write(BinaryWriter writer, PlaylistType obj) {
+    writer.writeByte(obj.index);
+  }
+}
+
 /// Initialize Hive adapters
 Future<void> registerHiveAdapters() async {
   Hive.registerAdapter(SongAdapter());
   Hive.registerAdapter(AlbumAdapter());
   Hive.registerAdapter(ArtistAdapter());
+  Hive.registerAdapter(PlaylistAdapter());
+  Hive.registerAdapter(PlaylistTypeAdapter());
   Hive.registerAdapter(ScanFolderAdapter());
 }
 

@@ -1,23 +1,67 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import '../../domain/entities/entities.dart';
+import '../../data/adapters/hive_adapters.dart';
+import '../../core/utils/app_logger.dart';
+import 'local_music_provider.dart';
 
 /// Provider for favorite songs
 final favoriteSongsProvider =
     StateNotifierProvider<FavoriteSongsNotifier, List<Song>>((ref) {
-      return FavoriteSongsNotifier();
+      return FavoriteSongsNotifier(ref);
     });
 
 class FavoriteSongsNotifier extends StateNotifier<List<Song>> {
-  FavoriteSongsNotifier() : super([]);
+  final Ref _ref;
+  Box<Song>? _favoritesBox;
 
-  void addToFavorites(Song song) {
-    if (!state.any((s) => s.id == song.id)) {
-      state = [...state, song.copyWith(isFavorite: true)];
+  FavoriteSongsNotifier(this._ref) : super([]) {
+    _loadFavorites();
+  }
+
+  Future<void> _loadFavorites() async {
+    try {
+      _favoritesBox = await Hive.openBox<Song>(HiveBoxes.favorites);
+      state = _favoritesBox!.values.toList();
+      AppLogger.info('Loaded ${state.length} favorites from storage');
+    } catch (e) {
+      AppLogger.error('Error loading favorites: $e');
     }
   }
 
-  void removeFromFavorites(String songId) {
+  Future<void> addToFavorites(Song song) async {
+    if (!state.any((s) => s.id == song.id)) {
+      final favoriteSong = song.copyWith(isFavorite: true);
+      state = [...state, favoriteSong];
+      
+      try {
+        _favoritesBox ??= await Hive.openBox<Song>(HiveBoxes.favorites);
+        await _favoritesBox!.put(song.id, favoriteSong);
+        
+        // Sync with local songs provider
+        _ref.read(localSongsProvider.notifier).updateSong(favoriteSong);
+      } catch (e) {
+        AppLogger.error('Error saving favorite: $e');
+      }
+    }
+  }
+
+  Future<void> removeFromFavorites(String songId) async {
     state = state.where((s) => s.id != songId).toList();
+    
+    try {
+      _favoritesBox ??= await Hive.openBox<Song>(HiveBoxes.favorites);
+      await _favoritesBox!.delete(songId);
+      
+      // Sync with local songs provider
+      final localSongs = _ref.read(localSongsProvider);
+      final song = localSongs.firstWhere((s) => s.id == songId, orElse: () => localSongs.first);
+      if (localSongs.any((s) => s.id == songId)) {
+        _ref.read(localSongsProvider.notifier).updateSong(song.copyWith(isFavorite: false));
+      }
+    } catch (e) {
+      AppLogger.error('Error removing favorite: $e');
+    }
   }
 
   void toggleFavorite(Song song) {
@@ -70,9 +114,23 @@ final playlistsProvider =
     });
 
 class PlaylistsNotifier extends StateNotifier<List<Playlist>> {
-  PlaylistsNotifier() : super([]);
+  Box<Playlist>? _playlistsBox;
 
-  void createPlaylist(String name, {String? description}) {
+  PlaylistsNotifier() : super([]) {
+    _loadPlaylists();
+  }
+
+  Future<void> _loadPlaylists() async {
+    try {
+      _playlistsBox = await Hive.openBox<Playlist>(HiveBoxes.playlists);
+      state = _playlistsBox!.values.toList();
+      AppLogger.info('Loaded ${state.length} playlists from storage');
+    } catch (e) {
+      AppLogger.error('Error loading playlists: $e');
+    }
+  }
+
+  Future<void> createPlaylist(String name, {String? description}) async {
     final now = DateTime.now();
     final playlist = Playlist(
       id: 'playlist_${now.millisecondsSinceEpoch}',
@@ -83,18 +141,32 @@ class PlaylistsNotifier extends StateNotifier<List<Playlist>> {
       type: PlaylistType.userCreated,
     );
     state = [...state, playlist];
+    
+    try {
+      _playlistsBox ??= await Hive.openBox<Playlist>(HiveBoxes.playlists);
+      await _playlistsBox!.put(playlist.id, playlist);
+    } catch (e) {
+      AppLogger.error('Error saving playlist: $e');
+    }
   }
 
-  void deletePlaylist(String playlistId) {
+  Future<void> deletePlaylist(String playlistId) async {
     state = state.where((p) => p.id != playlistId).toList();
+    
+    try {
+      _playlistsBox ??= await Hive.openBox<Playlist>(HiveBoxes.playlists);
+      await _playlistsBox!.delete(playlistId);
+    } catch (e) {
+      AppLogger.error('Error deleting playlist: $e');
+    }
   }
 
-  void addSongToPlaylist(String playlistId, Song song) {
+  Future<void> addSongToPlaylist(String playlistId, Song song) async {
     state = state.map((playlist) {
       if (playlist.id == playlistId) {
         if (!playlist.songs.any((s) => s.id == song.id)) {
           final songs = [...playlist.songs, song];
-          return playlist.copyWith(
+          final updated = playlist.copyWith(
             songs: songs,
             songCount: songs.length,
             totalDuration: songs.fold<Duration>(
@@ -103,17 +175,31 @@ class PlaylistsNotifier extends StateNotifier<List<Playlist>> {
             ),
             updatedAt: DateTime.now(),
           );
+          
+          // Save to Hive
+          _savePlaylist(updated);
+          
+          return updated;
         }
       }
       return playlist;
     }).toList();
   }
 
-  void removeSongFromPlaylist(String playlistId, String songId) {
+  Future<void> _savePlaylist(Playlist playlist) async {
+    try {
+      _playlistsBox ??= await Hive.openBox<Playlist>(HiveBoxes.playlists);
+      await _playlistsBox!.put(playlist.id, playlist);
+    } catch (e) {
+      AppLogger.error('Error saving playlist: $e');
+    }
+  }
+
+  Future<void> removeSongFromPlaylist(String playlistId, String songId) async {
     state = state.map((playlist) {
       if (playlist.id == playlistId) {
         final songs = playlist.songs.where((s) => s.id != songId).toList();
-        return playlist.copyWith(
+        final updated = playlist.copyWith(
           songs: songs,
           songCount: songs.length,
           totalDuration: songs.fold<Duration>(
@@ -122,28 +208,32 @@ class PlaylistsNotifier extends StateNotifier<List<Playlist>> {
           ),
           updatedAt: DateTime.now(),
         );
+        _savePlaylist(updated);
+        return updated;
       }
       return playlist;
     }).toList();
   }
 
-  void updatePlaylist(String playlistId, {String? name, String? description}) {
+  Future<void> updatePlaylist(String playlistId, {String? name, String? description}) async {
     state = state.map((playlist) {
       if (playlist.id == playlistId) {
-        return playlist.copyWith(
+        final updated = playlist.copyWith(
           name: name ?? playlist.name,
           description: description ?? playlist.description,
           updatedAt: DateTime.now(),
         );
+        _savePlaylist(updated);
+        return updated;
       }
       return playlist;
     }).toList();
   }
 
-  void updatePlaylistSongs(String playlistId, List<Song> songs) {
+  Future<void> updatePlaylistSongs(String playlistId, List<Song> songs) async {
     state = state.map((playlist) {
       if (playlist.id == playlistId) {
-        return playlist.copyWith(
+        final updated = playlist.copyWith(
           songs: songs,
           songCount: songs.length,
           totalDuration: songs.fold<Duration>(
@@ -152,6 +242,8 @@ class PlaylistsNotifier extends StateNotifier<List<Playlist>> {
           ),
           updatedAt: DateTime.now(),
         );
+        _savePlaylist(updated);
+        return updated;
       }
       return playlist;
     }).toList();
