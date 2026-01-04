@@ -15,6 +15,7 @@ import '../../presentation/screens/playlist/playlist_screen.dart';
 import '../../presentation/screens/artist/artist_screen.dart';
 import '../../presentation/screens/genre/genre_screen.dart';
 import '../../presentation/screens/settings/settings_screen.dart';
+import '../../presentation/screens/queue_screen.dart';
 import '../../domain/entities/entities.dart';
 
 /// App router configuration using GoRouter
@@ -149,6 +150,27 @@ final appRouter = GoRouter(
           genreColor: genreColor,
         );
       },
+    ),
+    // Queue
+    GoRoute(
+      path: '/queue',
+      name: 'queue',
+      pageBuilder: (context, state) => CustomTransitionPage(
+        key: state.pageKey,
+        child: const QueueScreen(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return SlideTransition(
+            position: Tween<Offset>(begin: const Offset(0, 1), end: Offset.zero)
+                .animate(
+                  CurvedAnimation(
+                    parent: animation,
+                    curve: Curves.easeOutCubic,
+                  ),
+                ),
+            child: child,
+          );
+        },
+      ),
     ),
   ],
 );

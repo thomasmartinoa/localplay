@@ -8,7 +8,9 @@ import 'package:iconsax/iconsax.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../providers/audio_provider.dart';
 import '../../../providers/library_provider.dart';
+import '../../../providers/sleep_timer_provider.dart';
 import '../../../data/models/player_state.dart';
+import '../../widgets/sleep_timer_sheet.dart';
 
 /// Full-screen glass-styled now playing screen
 class NowPlayingScreen extends ConsumerWidget {
@@ -454,18 +456,39 @@ class NowPlayingScreen extends ConsumerWidget {
   }
 
   Widget _buildBottomActions(BuildContext context, WidgetRef ref) {
+    final timerState = ref.watch(sleepTimerProvider);
+    
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
-        _buildGlassIconButton(
-          icon: Iconsax.subtitle,
-          onPressed: () {},
-          size: 44,
+        // Sleep Timer Button
+        Stack(
+          children: [
+            _buildGlassIconButton(
+              icon: Iconsax.timer_1,
+              onPressed: () => _showSleepTimer(context),
+              size: 44,
+              isActive: timerState.isActive,
+            ),
+            if (timerState.isActive)
+              Positioned(
+                right: 0,
+                top: 0,
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: const BoxDecoration(
+                    color: AppColors.primary,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const SizedBox(width: 6, height: 6),
+                ),
+              ),
+          ],
         ),
         _buildGlassIconButton(icon: Iconsax.driver, onPressed: () {}, size: 44),
         _buildGlassIconButton(
           icon: Iconsax.music_playlist,
-          onPressed: () => _showQueue(context, ref),
+          onPressed: () => context.push('/queue'),
           size: 44,
         ),
       ],
@@ -632,251 +655,12 @@ class NowPlayingScreen extends ConsumerWidget {
     );
   }
 
-  void _showQueue(BuildContext context, WidgetRef ref) {
+  void _showSleepTimer(BuildContext context) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (context) => Consumer(
-        builder: (context, ref, child) {
-          final playerState = ref.watch(playerStateProvider);
-          final audioService = ref.read(audioPlayerServiceProvider);
-
-          return playerState.when(
-            data: (state) {
-              final queue = state.queue;
-              final currentIndex = state.currentIndex;
-
-              return DraggableScrollableSheet(
-                initialChildSize: 0.6,
-                maxChildSize: 0.9,
-                expand: false,
-                builder: (context, scrollController) => ClipRRect(
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(24),
-                  ),
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            AppColors.glassDark.withValues(alpha: 0.95),
-                            AppColors.surfaceDark.withValues(alpha: 0.98),
-                          ],
-                        ),
-                        borderRadius: const BorderRadius.vertical(
-                          top: Radius.circular(24),
-                        ),
-                        border: Border(
-                          top: BorderSide(
-                            color: AppColors.glassHighlight.withValues(
-                              alpha: 0.3,
-                            ),
-                            width: 1,
-                          ),
-                        ),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(height: 12),
-                          Center(
-                            child: Container(
-                              width: 40,
-                              height: 4,
-                              decoration: BoxDecoration(
-                                color: AppColors.glassHighlight.withValues(
-                                  alpha: 0.5,
-                                ),
-                                borderRadius: BorderRadius.circular(2),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const Text(
-                                  'Up Next',
-                                  style: TextStyle(
-                                    color: AppColors.textPrimaryDark,
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.w700,
-                                    letterSpacing: -0.3,
-                                  ),
-                                ),
-                                if (queue.isNotEmpty)
-                                  GestureDetector(
-                                    onTap: () {
-                                      audioService.clearQueue();
-                                      Navigator.pop(context);
-                                    },
-                                    child: Text(
-                                      'Clear',
-                                      style: TextStyle(
-                                        color: AppColors.primary,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          Expanded(
-                            child: queue.isEmpty
-                                ? Center(
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Icon(
-                                          Iconsax.music_playlist,
-                                          size: 48,
-                                          color: AppColors.textSecondaryDark
-                                              .withValues(alpha: 0.5),
-                                        ),
-                                        const SizedBox(height: 16),
-                                        Text(
-                                          'No songs in queue',
-                                          style: TextStyle(
-                                            color: AppColors.textSecondaryDark
-                                                .withValues(alpha: 0.7),
-                                            fontSize: 16,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  )
-                                : ReorderableListView.builder(
-                                    scrollController: scrollController,
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 8,
-                                    ),
-                                    itemCount: queue.length,
-                                    onReorder: (oldIndex, newIndex) {
-                                      if (newIndex > oldIndex) newIndex--;
-                                      audioService.reorderQueue(
-                                        oldIndex,
-                                        newIndex,
-                                      );
-                                    },
-                                    itemBuilder: (context, index) {
-                                      final song = queue[index];
-                                      final isPlaying = index == currentIndex;
-
-                                      return ListTile(
-                                        key: ValueKey(song.id),
-                                        leading: ClipRRect(
-                                          borderRadius: BorderRadius.circular(
-                                            8,
-                                          ),
-                                          child: SizedBox(
-                                            width: 50,
-                                            height: 50,
-                                            child: _buildQueueArtwork(song),
-                                          ),
-                                        ),
-                                        title: Text(
-                                          song.title,
-                                          style: TextStyle(
-                                            color: isPlaying
-                                                ? AppColors.primary
-                                                : AppColors.textPrimaryDark,
-                                            fontWeight: isPlaying
-                                                ? FontWeight.w600
-                                                : FontWeight.w500,
-                                          ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                        subtitle: Text(
-                                          song.artist,
-                                          style: TextStyle(
-                                            color: AppColors.textSecondaryDark
-                                                .withValues(alpha: 0.7),
-                                            fontSize: 13,
-                                          ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                        trailing: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            if (isPlaying)
-                                              Icon(
-                                                Iconsax.music_play,
-                                                color: AppColors.primary,
-                                                size: 20,
-                                              ),
-                                            const SizedBox(width: 8),
-                                            ReorderableDragStartListener(
-                                              index: index,
-                                              child: Icon(
-                                                Icons.drag_handle,
-                                                color: AppColors
-                                                    .textSecondaryDark
-                                                    .withValues(alpha: 0.5),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        onTap: () {
-                                          audioService.skipToIndex(index);
-                                          Navigator.pop(context);
-                                        },
-                                      );
-                                    },
-                                  ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              );
-            },
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error: (error, stackTrace) => const SizedBox.shrink(),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildQueueArtwork(dynamic song) {
-    if (song.isLocal && song.localArtworkPath != null) {
-      return Image.file(
-        File(song.localArtworkPath!),
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) =>
-            _buildSmallArtworkPlaceholder(),
-      );
-    } else if (song.artworkUrl != null) {
-      return CachedNetworkImage(
-        imageUrl: song.artworkUrl!,
-        fit: BoxFit.cover,
-        placeholder: (context, url) => _buildSmallArtworkPlaceholder(),
-        errorWidget: (context, url, error) => _buildSmallArtworkPlaceholder(),
-      );
-    }
-    return _buildSmallArtworkPlaceholder();
-  }
-
-  Widget _buildSmallArtworkPlaceholder() {
-    return Container(
-      color: AppColors.glassDark,
-      child: const Icon(
-        Icons.music_note_rounded,
-        color: AppColors.textSecondaryDark,
-        size: 24,
-      ),
+      builder: (context) => const SleepTimerSheet(),
     );
   }
 }
