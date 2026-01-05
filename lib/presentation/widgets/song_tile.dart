@@ -59,18 +59,31 @@ class _SongTileState extends ConsumerState<SongTile>
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTapDown: (_) => _controller.forward(),
-      onTapUp: (_) => _controller.reverse(),
-      onTapCancel: () => _controller.reverse(),
-      onTap: widget.onTap,
-      child: AnimatedBuilder(
-        animation: _scaleAnimation,
-        builder: (context, child) =>
-            Transform.scale(scale: _scaleAnimation.value, child: child),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          child: Row(
+    final favoriteSongs = ref.watch(favoriteSongsProvider);
+    final isFavorite = favoriteSongs.any((s) => s.id == widget.song.id);
+
+    return Dismissible(
+      key: ValueKey('dismissible_${widget.song.id}'),
+      direction: DismissDirection.horizontal,
+      confirmDismiss: (direction) async {
+        // Toggle favorite instead of dismissing
+        ref.read(favoriteSongsProvider.notifier).toggleFavorite(widget.song);
+        return false; // Don't actually dismiss
+      },
+      background: _buildSwipeBackground(isLeft: true, isFavorite: isFavorite),
+      secondaryBackground: _buildSwipeBackground(isLeft: false, isFavorite: isFavorite),
+      child: GestureDetector(
+        onTapDown: (_) => _controller.forward(),
+        onTapUp: (_) => _controller.reverse(),
+        onTapCancel: () => _controller.reverse(),
+        onTap: widget.onTap,
+        child: AnimatedBuilder(
+          animation: _scaleAnimation,
+          builder: (context, child) =>
+              Transform.scale(scale: _scaleAnimation.value, child: child),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            child: Row(
             children: [
               // Leading: Album art or track number
               if (widget.showAlbumArt)
@@ -191,8 +204,9 @@ class _SongTileState extends ConsumerState<SongTile>
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildPlayingIndicator() {
     return SizedBox(
@@ -574,6 +588,36 @@ class _SongTileState extends ConsumerState<SongTile>
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildSwipeBackground({required bool isLeft, required bool isFavorite}) {
+    return Container(
+      alignment: isLeft ? Alignment.centerLeft : Alignment.centerRight,
+      padding: EdgeInsets.only(
+        left: isLeft ? 28 : 0,
+        right: isLeft ? 0 : 28,
+      ),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: isLeft ? Alignment.centerLeft : Alignment.centerRight,
+          end: isLeft ? Alignment.centerRight : Alignment.centerLeft,
+          colors: isFavorite
+              ? [
+                  Colors.red.withValues(alpha: 0.8),
+                  Colors.red.withValues(alpha: 0.0),
+                ]
+              : [
+                  AppColors.primary.withValues(alpha: 0.8),
+                  AppColors.primary.withValues(alpha: 0.0),
+                ],
+        ),
+      ),
+      child: Icon(
+        isFavorite ? Icons.heart_broken_rounded : Icons.favorite_rounded,
+        color: Colors.white,
+        size: 28,
       ),
     );
   }
