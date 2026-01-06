@@ -28,132 +28,142 @@ class MiniPlayer extends ConsumerWidget {
 
         final song = state.currentSong!;
 
-        return GestureDetector(
-          onTap: () {
-            HapticFeedback.lightImpact();
-            context.push('/now-playing');
-          },
-          child: LiquidGlass.withOwnLayer(
-            settings: const LiquidGlassSettings(
-              thickness: 20,
-              blur: 7,
-              glassColor: Color.fromARGB(61, 11, 7, 214),
-              lightIntensity: 0.25,
-              saturation: 1.0,
-            ),
-            shape: LiquidRoundedSuperellipse(borderRadius: 18),
-            child: SizedBox(
-              height: 56,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(10, 8, 8, 8),
-                child: Row(
-                  children: [
-                    // Album art
-                    Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(6),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.3),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(6),
-                        child: _buildArtwork(song),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    // Song info
-                    Expanded(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
+        return LiquidGlass.withOwnLayer(
+          settings: const LiquidGlassSettings(
+            thickness: 20,
+            blur: 7,
+            glassColor: Color.fromARGB(61, 11, 7, 214),
+            lightIntensity: 0.25,
+            saturation: 1.0,
+          ),
+          shape: LiquidRoundedSuperellipse(borderRadius: 18),
+          child: SizedBox(
+            height: 56,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(10, 8, 8, 8),
+              child: Row(
+                children: [
+                  // Tappable area (Album art + Song info) - Opens now playing screen
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        context.push('/now-playing');
+                      },
+                      behavior: HitTestBehavior.opaque,
+                      child: Row(
                         children: [
-                          Text(
-                            song.title,
-                            style: TextStyle(
-                              color: textColor,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              letterSpacing: -0.3,
-                              height: 1.1,
+                          // Album art
+                          Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(6),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.3),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
                             ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(6),
+                              child: _buildArtwork(song),
+                            ),
                           ),
-                          const SizedBox(height: 1),
-                          Text(
-                            song.artist,
-                            style: TextStyle(
-                              color: secondaryTextColor,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w400,
-                              height: 1.1,
+                          const SizedBox(width: 12),
+                          // Song info
+                          Expanded(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  song.title,
+                                  style: TextStyle(
+                                    color: textColor,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    letterSpacing: -0.3,
+                                    height: 1.1,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 1),
+                                Text(
+                                  song.artist,
+                                  style: TextStyle(
+                                    color: secondaryTextColor,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w400,
+                                    height: 1.1,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
                             ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
                           ),
                         ],
                       ),
                     ),
-                    // Control buttons
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // Play/Pause button
-                        GestureDetector(
-                          onTap: () {
-                            HapticFeedback.lightImpact();
-                            ref
-                                .read(audioPlayerServiceProvider)
-                                .togglePlayPause();
-                          },
-                          child: Container(
-                            width: 44,
-                            height: 44,
-                            decoration: const BoxDecoration(
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              state.isPlaying
-                                  ? Icons.pause_rounded
-                                  : Icons.play_arrow_rounded,
-                              color: textColor,
-                              size: 32,
-                            ),
+                  ),
+                  // Control buttons (NOT tappable for navigation)
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Play/Pause button
+                      GestureDetector(
+                        onTap: () {
+                          HapticFeedback.lightImpact();
+                          ref
+                              .read(audioPlayerServiceProvider)
+                              .togglePlayPause();
+                        },
+                        behavior: HitTestBehavior.opaque,
+                        child: Container(
+                          width: 44,
+                          height: 44,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            state.isPlaying
+                                ? Icons.pause_rounded
+                                : Icons.play_arrow_rounded,
+                            color: textColor,
+                            size: 32,
                           ),
                         ),
-                        // Next button
-                        GestureDetector(
-                          onTap: state.hasNext
-                              ? () {
-                                  HapticFeedback.lightImpact();
-                                  ref.read(audioPlayerServiceProvider).next();
-                                }
-                              : null,
-                          child: Container(
-                            width: 44,
-                            height: 44,
-                            decoration: const BoxDecoration(
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              Icons.fast_forward_rounded,
-                              color: state.hasNext
-                                  ? textColor
-                                  : textColor.withValues(alpha: 0.3),
-                              size: 32,
-                            ),
+                      ),
+                      // Next button
+                      GestureDetector(
+                        onTap: state.hasNext
+                            ? () {
+                                HapticFeedback.lightImpact();
+                                ref.read(audioPlayerServiceProvider).next();
+                              }
+                            : null,
+                        behavior: HitTestBehavior.opaque,
+                        child: Container(
+                          width: 44,
+                          height: 44,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.fast_forward_rounded,
+                            color: state.hasNext
+                                ? textColor
+                                : textColor.withValues(alpha: 0.3),
+                            size: 32,
                           ),
                         ),
-                      ],
-                    ),
-                  ],
-                ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
           ),

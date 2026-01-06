@@ -37,6 +37,7 @@ class _SongTileState extends ConsumerState<SongTile>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
+  bool _isDismissing = false;
 
   @override
   void initState() {
@@ -65,18 +66,46 @@ class _SongTileState extends ConsumerState<SongTile>
     return Dismissible(
       key: ValueKey('dismissible_${widget.song.id}'),
       direction: DismissDirection.horizontal,
+      dismissThresholds: const {
+        DismissDirection.startToEnd: 0.4,
+        DismissDirection.endToStart: 0.4,
+      },
+      movementDuration: const Duration(milliseconds: 200),
+      resizeDuration: const Duration(milliseconds: 200),
       confirmDismiss: (direction) async {
+        if (_isDismissing) return false;
+        _isDismissing = true;
+        
         // Toggle favorite instead of dismissing
         ref.read(favoriteSongsProvider.notifier).toggleFavorite(widget.song);
+        
+        // Reset flag after a short delay
+        Future.delayed(const Duration(milliseconds: 300), () {
+          if (mounted) {
+            setState(() => _isDismissing = false);
+          }
+        });
+        
         return false; // Don't actually dismiss
       },
       background: _buildSwipeBackground(isLeft: true, isFavorite: isFavorite),
       secondaryBackground: _buildSwipeBackground(isLeft: false, isFavorite: isFavorite),
       child: GestureDetector(
-        onTapDown: (_) => _controller.forward(),
-        onTapUp: (_) => _controller.reverse(),
-        onTapCancel: () => _controller.reverse(),
-        onTap: widget.onTap,
+        behavior: HitTestBehavior.opaque,
+        onTapDown: (_) {
+          if (!_isDismissing) _controller.forward();
+        },
+        onTapUp: (_) {
+          if (!_isDismissing) _controller.reverse();
+        },
+        onTapCancel: () {
+          if (!_isDismissing) _controller.reverse();
+        },
+        onTap: () {
+          if (!_isDismissing && widget.onTap != null) {
+            widget.onTap!();
+          }
+        },
         child: AnimatedBuilder(
           animation: _scaleAnimation,
           builder: (context, child) =>
